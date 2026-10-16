@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { GameSettings, Language, RoomSummary } from '../types/game';
 import { t, UI_TEXT } from '../i18n/translations';
-import { TokenIcon } from './icons/MoldovaIcons';
+import { TokenSvg } from './icons/MoldovaIcons';
 
 interface RoomBrowserProps {
   lang: Language;
@@ -399,7 +399,7 @@ export const RoomBrowser: React.FC<RoomBrowserProps> = ({
                         className="w-4 h-4 rounded-full flex items-center justify-center text-white shrink-0 border border-[#141414]"
                         style={{ backgroundColor: seatedPlayer.color }}
                       >
-                        <TokenIcon token={seatedPlayer.token} className="w-2.5 h-2.5" />
+                        <TokenSvg tokenId={seatedPlayer.token} className="w-2.5 h-2.5" />
                       </span>
                       <span className="truncate max-w-[78px]">{seatedPlayer.name}</span>
                     </div>
