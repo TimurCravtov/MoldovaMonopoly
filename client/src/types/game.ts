@@ -118,10 +118,32 @@ export interface LogEntry {
 }
 
 export interface GameSettings {
+  maxPlayers?: number;
   startingCash: number;
   freeParkingJackpot: boolean;
   doubleOnGo: boolean;
   auctionEnabled: boolean;
+  autoStart?: boolean;
+  isPrivate?: boolean;
+}
+
+export interface RoomPlayerPreview {
+  id: string;
+  name: string;
+  token: string;
+  color: string;
+  isBot: boolean;
+}
+
+export interface RoomSummary {
+  id: string;
+  name: string;
+  phase: TurnPhase;
+  playerCount: number;
+  maxPlayers: number;
+  players: RoomPlayerPreview[];
+  settings: GameSettings;
+  createdAt: number;
 }
 
 export interface GameState {
