@@ -37,15 +37,7 @@ export const RoomBrowser: React.FC<RoomBrowserProps> = ({
   const [isPrivate, setIsPrivate] = useState<boolean>(false);
   const [creating, setCreating] = useState(false);
 
-  const getApiBase = () => {
-    if (import.meta.env.VITE_API_URL) {
-      return import.meta.env.VITE_API_URL;
-    }
-    if (window.location.port === '5173') {
-      return `${window.location.protocol}//${window.location.hostname}:8080`;
-    }
-    return '';
-  };
+  const getApiBase = () => '';
 
   const fetchRooms = useCallback(async () => {
     try {
