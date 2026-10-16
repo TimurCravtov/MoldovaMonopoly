@@ -39,10 +39,13 @@ func NewEngine(roomID, roomName string) *Engine {
 			HotelsRemaining: 12,
 			Trades:          make([]*TradeOffer, 0),
 			Settings: GameSettings{
+				MaxPlayers:         4,
 				StartingCash:       1500,
 				FreeParkingJackpot: true,
 				DoubleOnGo:         false,
 				AuctionEnabled:     true,
+				AutoStart:          false,
+				IsPrivate:          false,
 			},
 			Logs:       make([]LogEntry, 0),
 			TurnNumber: 1,
@@ -84,12 +87,23 @@ func (e *Engine) addLog(logType string, ro, en, ru string) {
 func (e *Engine) Lock()   { e.mu.Lock() }
 func (e *Engine) Unlock() { e.mu.Unlock() }
 
+func (e *Engine) maxSeats() int {
+	if e.State.Settings.MaxPlayers >= 2 && e.State.Settings.MaxPlayers <= 8 {
+		return e.State.Settings.MaxPlayers
+	}
+	return 8
+}
+
 // Reset resets the room state back to the lobby in-place while holding the Engine mutex.
 func (e *Engine) Reset() {
 	oldPlayers := e.State.Players
 	oldSettings := e.State.Settings
 	roomID := e.State.RoomID
 	roomName := e.State.RoomName
+
+	// Temporarily disable AutoStart during re-seating on Reset
+	savedAutoStart := oldSettings.AutoStart
+	oldSettings.AutoStart = false
 
 	e.State = &GameState{
 		RoomID:          roomID,
@@ -115,6 +129,7 @@ func (e *Engine) Reset() {
 			_, _ = e.AddPlayer(p.ID, p.Name, p.Token, p.Color, false)
 		}
 	}
+	e.State.Settings.AutoStart = savedAutoStart
 }
 
 func (e *Engine) GetPlayer(id string) *Player {
@@ -144,8 +159,9 @@ func (e *Engine) AddPlayer(id, name, token, color string, isBot bool) (*Player, 
 	if e.State.Phase != PhaseLobby {
 		return nil, errors.New("game has already started")
 	}
-	if len(e.State.Players) >= 8 {
-		return nil, errors.New("room is full (max 8 players)")
+	maxSeats := e.maxSeats()
+	if len(e.State.Players) >= maxSeats {
+		return nil, fmt.Errorf("room is full (max %d players)", maxSeats)
 	}
 
 	if token == "" {
@@ -175,6 +191,11 @@ func (e *Engine) AddPlayer(id, name, token, color string, isBot bool) (*Player, 
 		fmt.Sprintf("%s joined the table.", p.Name),
 		fmt.Sprintf("%s присоединился к столу.", p.Name),
 	)
+
+	if e.State.Settings.AutoStart && len(e.State.Players) >= maxSeats && len(e.State.Players) >= 2 && e.State.HostID != "" {
+		_ = e.StartGame(e.State.HostID)
+	}
+
 	return p, nil
 }
 
@@ -182,7 +203,7 @@ func (e *Engine) AddBot() (*Player, error) {
 	if e.State.Phase != PhaseLobby {
 		return nil, errors.New("can only add bots in lobby")
 	}
-	if len(e.State.Players) >= 8 {
+	if len(e.State.Players) >= e.maxSeats() {
 		return nil, errors.New("room is full")
 	}
 	botIndex := 0
@@ -236,9 +257,21 @@ func (e *Engine) UpdateSettings(s GameSettings) error {
 	if s.StartingCash < 500 || s.StartingCash > 5000 {
 		s.StartingCash = 1500
 	}
+	if s.MaxPlayers < 2 {
+		s.MaxPlayers = 4
+	}
+	if s.MaxPlayers > 8 {
+		s.MaxPlayers = 8
+	}
+	if s.MaxPlayers < len(e.State.Players) {
+		s.MaxPlayers = len(e.State.Players)
+	}
 	e.State.Settings = s
 	for _, p := range e.State.Players {
 		p.Cash = s.StartingCash
+	}
+	if s.AutoStart && len(e.State.Players) >= s.MaxPlayers && len(e.State.Players) >= 2 && e.State.HostID != "" {
+		_ = e.StartGame(e.State.HostID)
 	}
 	return nil
 }
