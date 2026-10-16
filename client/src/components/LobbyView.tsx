@@ -7,12 +7,14 @@ import {
 } from '../types/game';
 import { t, UI_TEXT } from '../i18n/translations';
 import { TokenSvg } from './icons/MoldovaIcons';
+import { RoomBrowser } from './RoomBrowserModal';
 
 interface LobbyViewProps {
   state: GameState;
   myPlayerId: string;
   lang: Language;
   onSendAction: (action: string, payload?: Record<string, unknown>) => void;
+  onSwitchRoom: (roomId: string) => void;
 }
 
 export const LobbyView: React.FC<LobbyViewProps> = ({
@@ -20,9 +22,11 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
   myPlayerId,
   lang,
   onSendAction,
+  onSwitchRoom,
 }) => {
   const myPlayer = state.players.find((p) => p.id === myPlayerId);
   const [nameInput, setNameInput] = useState(myPlayer?.name || '');
+  const maxSeats = state.settings.maxPlayers || 4;
 
   const handleAppearanceChange = (
     newName: string,
@@ -37,10 +41,10 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+    <div className="max-w-5xl mx-auto p-4 sm:p-6 space-y-6">
       {/* Classic Box Cover Header */}
-      <div className="bg-[#D8E5D7] border-[3px] border-[#141414] shadow-[6px_6px_0_#141414] p-6 text-center">
-        <div className="inline-block bg-[#E32626] text-white border-[2.5px] border-[#141414] shadow-[4px_4px_0_#141414] px-8 py-2.5 mb-3">
+      <div className="bg-[#D8E5D7] border-[3px] border-[#141414] shadow-[6px_6px_0_#141414] p-5 text-center">
+        <div className="inline-block bg-[#E32626] text-white border-[2.5px] border-[#141414] shadow-[4px_4px_0_#141414] px-8 py-2 mb-2.5">
           <h1 className="text-2xl sm:text-4xl font-black tracking-[0.15em] uppercase leading-none">
             MONOPOLY
           </h1>
@@ -52,6 +56,14 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
           {t(UI_TEXT.subtitle, lang)}
         </p>
       </div>
+
+      {/* Live VK Monopoly Style Room Directory & Create New Table */}
+      <RoomBrowser
+        inline
+        lang={lang}
+        currentRoomId={state.roomId}
+        onSelectRoom={onSwitchRoom}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Left Card (7 cols): Player Sheet & Rules */}
@@ -170,25 +182,67 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
               4. {t(UI_TEXT.gameSettings, lang)}
             </div>
 
-            <label className="flex items-center justify-between text-xs font-semibold">
-              <span>{t(UI_TEXT.startingCash, lang)}</span>
-              <select
-                value={state.settings.startingCash}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <label className="flex items-center justify-between text-xs font-semibold">
+                <span>{t(UI_TEXT.maxPlayersLabel, lang)}</span>
+                <select
+                  value={maxSeats}
+                  onChange={(e) =>
+                    onSendAction('UPDATE_SETTINGS', {
+                      settings: {
+                        ...state.settings,
+                        maxPlayers: Number(e.target.value),
+                      },
+                    })
+                  }
+                  className="bg-white border-2 border-[#141414] px-2 py-1 font-mono-num font-bold"
+                >
+                  <option value={2}>2 (Duel 1v1)</option>
+                  <option value={3}>3</option>
+                  <option value={4}>4 (Standard)</option>
+                  <option value={6}>6</option>
+                  <option value={8}>8 (Maxim)</option>
+                </select>
+              </label>
+
+              <label className="flex items-center justify-between text-xs font-semibold">
+                <span>{t(UI_TEXT.startingCash, lang)}</span>
+                <select
+                  value={state.settings.startingCash}
+                  onChange={(e) =>
+                    onSendAction('UPDATE_SETTINGS', {
+                      settings: {
+                        ...state.settings,
+                        startingCash: Number(e.target.value),
+                      },
+                    })
+                  }
+                  className="bg-white border-2 border-[#141414] px-2 py-1 font-mono-num font-bold"
+                >
+                  <option value={1000}>1000 MDL</option>
+                  <option value={1500}>1500 MDL</option>
+                  <option value={2000}>2000 MDL</option>
+                  <option value={2500}>2500 MDL</option>
+                  <option value={3000}>3000 MDL</option>
+                </select>
+              </label>
+            </div>
+
+            <label className="flex items-center gap-2.5 text-xs font-medium cursor-pointer">
+              <input
+                type="checkbox"
+                checked={Boolean(state.settings.autoStart)}
                 onChange={(e) =>
                   onSendAction('UPDATE_SETTINGS', {
                     settings: {
                       ...state.settings,
-                      startingCash: Number(e.target.value),
+                      autoStart: e.target.checked,
                     },
                   })
                 }
-                className="bg-white border-2 border-[#141414] px-2.5 py-1 font-mono-num font-bold"
-              >
-                <option value={1000}>1000 MDL</option>
-                <option value={1500}>1500 MDL (Standard)</option>
-                <option value={2000}>2000 MDL</option>
-                <option value={3000}>3000 MDL</option>
-              </select>
+                className="accent-[#141414] w-4 h-4"
+              />
+              <span>{t(UI_TEXT.autoStartLabel, lang)}</span>
             </label>
 
             <label className="flex items-center gap-2.5 text-xs font-medium cursor-pointer">
@@ -249,9 +303,9 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b-2 border-[#141414] pb-2">
               <h2 className="text-sm font-black uppercase tracking-wider">
-                {t(UI_TEXT.playersInRoom, lang)} ({state.players.length}/8)
+                {t(UI_TEXT.playersInRoom, lang)} ({state.players.length}/{maxSeats})
               </h2>
-              {state.players.length < 8 && (
+              {state.players.length < maxSeats && (
                 <button
                   onClick={() => onSendAction('ADD_BOT')}
                   className="px-2.5 py-1 bg-[#FDE021] hover:bg-[#F5D400] border-[1.5px] border-[#141414] shadow-[2px_2px_0_#141414] text-[#141414] font-black text-[11px] uppercase"
