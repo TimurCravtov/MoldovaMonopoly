@@ -84,6 +84,39 @@ func (e *Engine) addLog(logType string, ro, en, ru string) {
 func (e *Engine) Lock()   { e.mu.Lock() }
 func (e *Engine) Unlock() { e.mu.Unlock() }
 
+// Reset resets the room state back to the lobby in-place while holding the Engine mutex.
+func (e *Engine) Reset() {
+	oldPlayers := e.State.Players
+	oldSettings := e.State.Settings
+	roomID := e.State.RoomID
+	roomName := e.State.RoomName
+
+	e.State = &GameState{
+		RoomID:          roomID,
+		RoomName:        roomName,
+		Phase:           PhaseLobby,
+		Players:         make([]*Player, 0),
+		Tiles:           NewChisinauBoard(),
+		HousesRemaining: 32,
+		HotelsRemaining: 12,
+		Trades:          make([]*TradeOffer, 0),
+		Settings:        oldSettings,
+		Logs:            make([]LogEntry, 0),
+		TurnNumber:      1,
+	}
+	e.chanceDeck = NewChanceDeck()
+	e.communityChestDeck = NewCommunityChestDeck()
+	e.chanceIdx = 0
+	e.communityIdx = 0
+	e.shuffleDecks()
+
+	for _, p := range oldPlayers {
+		if !p.IsBot && p.Connected {
+			_, _ = e.AddPlayer(p.ID, p.Name, p.Token, p.Color, false)
+		}
+	}
+}
+
 func (e *Engine) GetPlayer(id string) *Player {
 	for _, p := range e.State.Players {
 		if p.ID == id {

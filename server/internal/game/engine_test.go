@@ -75,4 +75,15 @@ func TestMonopolyCoreMechanics(t *testing.T) {
 	if eng.State.Tiles[5].OwnerID != "p2" {
 		t.Fatalf("expected p2 to win auction for tile 5, owner is %q", eng.State.Tiles[5].OwnerID)
 	}
+
+	// Test Reset while locked does not unlock a different mutex and preserves connected human players
+	eng.Lock()
+	eng.Reset()
+	eng.Unlock()
+	if eng.State.Phase != PhaseLobby {
+		t.Fatalf("expected PhaseLobby after Reset, got %s", eng.State.Phase)
+	}
+	if len(eng.State.Players) != 2 {
+		t.Fatalf("expected 2 connected human players preserved after Reset, got %d", len(eng.State.Players))
+	}
 }
