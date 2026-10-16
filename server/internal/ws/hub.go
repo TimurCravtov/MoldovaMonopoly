@@ -177,15 +177,83 @@ func (h *Hub) GetOrCreateRoom(id, name string) *Room {
 
 func (h *Hub) ResetRoom(id string) *Room {
 	h.mu.Lock()
-	defer h.mu.Unlock()
-	name := "Chișinău — Piața Marii Adunări Naționale"
-	if old, ok := h.rooms[id]; ok {
-		name = old.Name
-		close(old.stopCh)
+	r, ok := h.rooms[id]
+	if !ok {
+		r = NewRoom(id, "Chișinău — Piața Marii Adunări Naționale")
+		h.rooms[id] = r
+		h.mu.Unlock()
+		return r
 	}
-	r := NewRoom(id, name)
-	h.rooms[id] = r
+	h.mu.Unlock()
+
+	r.Engine.Lock()
+	r.Engine.Reset()
+	r.Engine.Unlock()
+	r.BroadcastState()
 	return r
+}
+
+func (r *Room) ExecuteAction(playerID string, msg ClientMessage) error {
+	r.Engine.Lock()
+	defer r.Engine.Unlock()
+
+	switch msg.Action {
+	case "ADD_BOT":
+		_, err := r.Engine.AddBot()
+		return err
+	case "REMOVE_PLAYER":
+		return r.Engine.RemovePlayer(msg.TargetID)
+	case "UPDATE_APPEARANCE":
+		return r.Engine.UpdatePlayerAppearance(playerID, msg.Name, msg.Token, msg.Color)
+	case "UPDATE_SETTINGS":
+		if msg.Settings != nil {
+			return r.Engine.UpdateSettings(*msg.Settings)
+		}
+		return nil
+	case "START_GAME":
+		return r.Engine.StartGame(playerID)
+	case "ROLL_DICE":
+		return r.Engine.RollDice(playerID)
+	case "BUY_PROPERTY":
+		return r.Engine.BuyProperty(playerID)
+	case "DECLINE_PROPERTY":
+		return r.Engine.DeclineProperty(playerID)
+	case "PLACE_BID":
+		return r.Engine.PlaceBid(playerID, msg.Amount)
+	case "PASS_AUCTION":
+		return r.Engine.PassAuction(playerID)
+	case "BUILD_HOUSE":
+		return r.Engine.BuildHouse(playerID, msg.TileIndex)
+	case "SELL_HOUSE":
+		return r.Engine.SellHouse(playerID, msg.TileIndex)
+	case "MORTGAGE_PROPERTY":
+		return r.Engine.MortgageProperty(playerID, msg.TileIndex)
+	case "UNMORTGAGE_PROPERTY":
+		return r.Engine.UnmortgageProperty(playerID, msg.TileIndex)
+	case "PAY_JAIL_BAIL":
+		return r.Engine.PayJailBail(playerID)
+	case "USE_JAIL_CARD":
+		return r.Engine.UseJailCard(playerID)
+	case "PAY_DEBT":
+		return r.Engine.PayDebt(playerID)
+	case "DECLARE_BANKRUPTCY":
+		return r.Engine.DeclareBankruptcy(playerID)
+	case "END_TURN":
+		return r.Engine.EndTurn(playerID)
+	case "PROPOSE_TRADE":
+		if msg.Trade != nil {
+			msg.Trade.FromPlayerID = playerID
+			_, err := r.Engine.ProposeTrade(*msg.Trade)
+			return err
+		}
+		return nil
+	case "RESPOND_TRADE":
+		return r.Engine.RespondTrade(msg.TradeID, playerID, msg.Accept)
+	case "RESET_GAME":
+		r.Engine.Reset()
+		return nil
+	}
+	return nil
 }
 
 func (h *Hub) ServeWS(w http.ResponseWriter, req *http.Request) {
@@ -255,62 +323,7 @@ func (h *Hub) readPump(c *ClientConn) {
 			break
 		}
 
-		var actionErr error
-		room.Engine.Lock()
-		switch msg.Action {
-		case "ADD_BOT":
-			_, actionErr = room.Engine.AddBot()
-		case "REMOVE_PLAYER":
-			actionErr = room.Engine.RemovePlayer(msg.TargetID)
-		case "UPDATE_APPEARANCE":
-			actionErr = room.Engine.UpdatePlayerAppearance(c.PlayerID, msg.Name, msg.Token, msg.Color)
-		case "UPDATE_SETTINGS":
-			if msg.Settings != nil {
-				actionErr = room.Engine.UpdateSettings(*msg.Settings)
-			}
-		case "START_GAME":
-			actionErr = room.Engine.StartGame(c.PlayerID)
-		case "ROLL_DICE":
-			actionErr = room.Engine.RollDice(c.PlayerID)
-		case "BUY_PROPERTY":
-			actionErr = room.Engine.BuyProperty(c.PlayerID)
-		case "DECLINE_PROPERTY":
-			actionErr = room.Engine.DeclineProperty(c.PlayerID)
-		case "PLACE_BID":
-			actionErr = room.Engine.PlaceBid(c.PlayerID, msg.Amount)
-		case "PASS_AUCTION":
-			actionErr = room.Engine.PassAuction(c.PlayerID)
-		case "BUILD_HOUSE":
-			actionErr = room.Engine.BuildHouse(c.PlayerID, msg.TileIndex)
-		case "SELL_HOUSE":
-			actionErr = room.Engine.SellHouse(c.PlayerID, msg.TileIndex)
-		case "MORTGAGE_PROPERTY":
-			actionErr = room.Engine.MortgageProperty(c.PlayerID, msg.TileIndex)
-		case "UNMORTGAGE_PROPERTY":
-			actionErr = room.Engine.UnmortgageProperty(c.PlayerID, msg.TileIndex)
-		case "PAY_JAIL_BAIL":
-			actionErr = room.Engine.PayJailBail(c.PlayerID)
-		case "USE_JAIL_CARD":
-			actionErr = room.Engine.UseJailCard(c.PlayerID)
-		case "PAY_DEBT":
-			actionErr = room.Engine.PayDebt(c.PlayerID)
-		case "DECLARE_BANKRUPTCY":
-			actionErr = room.Engine.DeclareBankruptcy(c.PlayerID)
-		case "END_TURN":
-			actionErr = room.Engine.EndTurn(c.PlayerID)
-		case "PROPOSE_TRADE":
-			if msg.Trade != nil {
-				msg.Trade.FromPlayerID = c.PlayerID
-				_, actionErr = room.Engine.ProposeTrade(*msg.Trade)
-			}
-		case "RESPOND_TRADE":
-			actionErr = room.Engine.RespondTrade(msg.TradeID, c.PlayerID, msg.Accept)
-		case "RESET_GAME":
-			room.Engine.Reset()
-		}
-		room.Engine.Unlock()
-
-		if actionErr != nil {
+		if actionErr := room.ExecuteAction(c.PlayerID, msg); actionErr != nil {
 			_ = c.SendJSON(ServerEnvelope{
 				Type:    "ERROR",
 				Message: actionErr.Error(),
