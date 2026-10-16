@@ -10,8 +10,8 @@ import (
 
 var (
 	AvailableTokens = []string{"trolleybus", "placinta", "grapes", "wine", "cusma", "rutiera", "sunflower", "violin"}
-	AvailableColors = []string{"#E11D48", "#2563EB", "#16A34A", "#D97706", "#9333EA", "#0891B2", "#DB2777", "#4F46E5"}
-	BotNames        = []string{"Cumătrul Ion 🤖", "Nanășul Vasile 🤖", "Tanti Zina (Piața) 🤖", "Șoferul de pe 22 🤖", "Băiatul de la Ciocana 🤖", "Doamna de la FISC 🤖"}
+	AvailableColors = []string{"#9F1239", "#1E40AF", "#166534", "#B45309", "#581C87", "#0F766E", "#831843", "#3730A3"}
+	BotNames        = []string{"Cumatrul Ion (AI)", "Nanasul Vasile (AI)", "Tanti Zina (AI)", "Soferul Ruta 22 (AI)", "Baiatul din Ciocana (AI)", "Inspectorul FISC (AI)"}
 )
 
 type Engine struct {
@@ -138,9 +138,9 @@ func (e *Engine) AddPlayer(id, name, token, color string, isBot bool) (*Player, 
 	}
 
 	e.addLog("info",
-		fmt.Sprintf("%s a intrat în cameră.", p.Name),
-		fmt.Sprintf("%s joined the room.", p.Name),
-		fmt.Sprintf("%s присоединился к комнате.", p.Name),
+		fmt.Sprintf("%s s-a alăturat mesei.", p.Name),
+		fmt.Sprintf("%s joined the table.", p.Name),
+		fmt.Sprintf("%s присоединился к столу.", p.Name),
 	)
 	return p, nil
 }
@@ -189,7 +189,7 @@ func (e *Engine) RemovePlayer(id string) error {
 		}
 	}
 	e.addLog("info",
-		fmt.Sprintf("%s a ieșit din cameră.", removed.Name),
+		fmt.Sprintf("%s a părăsit camera.", removed.Name),
 		fmt.Sprintf("%s left the room.", removed.Name),
 		fmt.Sprintf("%s покинул комнату.", removed.Name),
 	)
@@ -275,14 +275,13 @@ func (e *Engine) StartGame(requesterID string) error {
 	e.State.TurnNumber = 1
 	cur := e.CurrentPlayer()
 	e.addLog("info",
-		fmt.Sprintf("🎉 Jocul a început! Este rândul lui %s.", cur.Name),
-		fmt.Sprintf("🎉 Game started! It is %s's turn.", cur.Name),
-		fmt.Sprintf("🎉 Игра началась! Ходит %s.", cur.Name),
+		fmt.Sprintf("Partida a început! Este rândul lui %s.", cur.Name),
+		fmt.Sprintf("Match started! It is %s's turn.", cur.Name),
+		fmt.Sprintf("Партия началась! Ходит %s.", cur.Name),
 	)
 	return nil
 }
 
-// PayJailBail pays 50 MDL before rolling to exit Penitenciarul Nr. 13.
 func (e *Engine) PayJailBail(playerID string) error {
 	cur := e.CurrentPlayer()
 	if cur == nil || cur.ID != playerID {
@@ -301,14 +300,13 @@ func (e *Engine) PayJailBail(playerID string) error {
 	cur.InJail = false
 	cur.JailTurns = 0
 	e.addLog("jail",
-		fmt.Sprintf("🔓 %s a plătit 50 MDL cauțiune și a ieșit din Penitenciarul Nr. 13.", cur.Name),
-		fmt.Sprintf("🔓 %s paid 50 MDL bail and exited Prison No. 13.", cur.Name),
-		fmt.Sprintf("🔓 %s заплатил залог 50 MDL и вышел из Тюрьмы № 13.", cur.Name),
+		fmt.Sprintf("%s a achitat cauțiunea de 50 MDL și a ieșit din Penitenciarul Nr. 13.", cur.Name),
+		fmt.Sprintf("%s paid 50 MDL bail and exited Prison No. 13.", cur.Name),
+		fmt.Sprintf("%s заплатил залог 50 MDL и вышел из Тюрьмы № 13.", cur.Name),
 	)
 	return nil
 }
 
-// UseJailCard uses "Scrisoare de la Cumătru" to exit Jail for free.
 func (e *Engine) UseJailCard(playerID string) error {
 	cur := e.CurrentPlayer()
 	if cur == nil || cur.ID != playerID {
@@ -324,14 +322,13 @@ func (e *Engine) UseJailCard(playerID string) error {
 	cur.InJail = false
 	cur.JailTurns = 0
 	e.addLog("jail",
-		fmt.Sprintf("📜 %s a folosit «Scrisoarea de la Cumătru» și a ieșit din Penitenciarul Nr. 13!", cur.Name),
-		fmt.Sprintf("📜 %s used 'Letter from Cumătru' and exited Prison No. 13 for free!", cur.Name),
-		fmt.Sprintf("📜 %s использовал «Звонок от Кума» и вышел из Тюрьмы № 13!", cur.Name),
+		fmt.Sprintf("%s a folosit «Scrisoarea de la Cumătru» și a fost eliberat din Penitenciarul Nr. 13.", cur.Name),
+		fmt.Sprintf("%s used 'Letter from Cumătru' and exited Prison No. 13 for free.", cur.Name),
+		fmt.Sprintf("%s использовал «Звонок от Кума» и вышел из Тюрьмы № 13.", cur.Name),
 	)
 	return nil
 }
 
-// RollDice rolls 2 dice and moves the current player.
 func (e *Engine) RollDice(playerID string) error {
 	cur := e.CurrentPlayer()
 	if cur == nil || cur.ID != playerID {
@@ -349,16 +346,15 @@ func (e *Engine) RollDice(playerID string) error {
 	isDoubles := d1 == d2
 	sum := d1 + d2
 
-	// Handle player in Jail
 	if cur.InJail {
 		if isDoubles {
 			cur.InJail = false
 			cur.JailTurns = 0
-			e.State.DoublesCount = 0 // Do not grant extra roll after escaping jail via doubles
+			e.State.DoublesCount = 0
 			e.addLog("jail",
-				fmt.Sprintf("🎲 %s a dat dublă (%d+%d) și a evadat legal din Penitenciarul Nr. 13!", cur.Name, d1, d2),
-				fmt.Sprintf("🎲 %s rolled doubles (%d+%d) and escaped Prison No. 13!", cur.Name, d1, d2),
-				fmt.Sprintf("🎲 %s выбросил дубль (%d+%d) и вышел из Тюрьмы № 13!", cur.Name, d1, d2),
+				fmt.Sprintf("%s a aruncat dublă (%d+%d) și a ieșit din Penitenciarul Nr. 13!", cur.Name, d1, d2),
+				fmt.Sprintf("%s rolled doubles (%d+%d) and escaped Prison No. 13!", cur.Name, d1, d2),
+				fmt.Sprintf("%s выбросил дубль (%d+%d) и вышел из Тюрьмы № 13!", cur.Name, d1, d2),
 			)
 			e.movePlayerBySteps(cur, sum, false)
 			return nil
@@ -366,13 +362,12 @@ func (e *Engine) RollDice(playerID string) error {
 
 		cur.JailTurns++
 		if cur.JailTurns >= 3 {
-			// Forced bail after 3rd failed roll
 			cur.InJail = false
 			cur.JailTurns = 0
 			e.addLog("jail",
-				fmt.Sprintf("🎲 %s nu a dat dublă după 3 încercări (%d+%d). Plătește 50 MDL cauțiune și înaintează.", cur.Name, d1, d2),
-				fmt.Sprintf("🎲 %s failed 3rd roll (%d+%d). Pays 50 MDL bail and moves.", cur.Name, d1, d2),
-				fmt.Sprintf("🎲 %s не выбросил дубль с 3-й попытки (%d+%d). Платит 50 MDL и идёт вперёд.", cur.Name, d1, d2),
+				fmt.Sprintf("%s nu a dat dublă după 3 încercări (%d+%d). Achită 50 MDL cauțiune și avansează.", cur.Name, d1, d2),
+				fmt.Sprintf("%s failed 3rd roll (%d+%d). Pays 50 MDL bail and moves.", cur.Name, d1, d2),
+				fmt.Sprintf("%s не выбросил дубль с 3-й попытки (%d+%d). Платит 50 MDL и идёт вперёд.", cur.Name, d1, d2),
 			)
 			if e.State.Settings.FreeParkingJackpot {
 				e.State.FreeParkingPot += 50
@@ -390,9 +385,9 @@ func (e *Engine) RollDice(playerID string) error {
 		}
 
 		e.addLog("jail",
-			fmt.Sprintf("🔒 %s a dat %d+%d (fără dublă) și mai rămâne în Penitenciarul Nr. 13 (%d/3).", cur.Name, d1, d2, cur.JailTurns),
-			fmt.Sprintf("🔒 %s rolled %d+%d (no doubles) and stays in Prison No. 13 (%d/3).", cur.Name, d1, d2, cur.JailTurns),
-			fmt.Sprintf("🔒 %s выбросил %d+%d (без дубля) и остаётся в Тюрьме № 13 (%d/3).", cur.Name, d1, d2, cur.JailTurns),
+			fmt.Sprintf("%s a aruncat %d+%d (fără dublă) și rămâne în Penitenciarul Nr. 13 (%d/3).", cur.Name, d1, d2, cur.JailTurns),
+			fmt.Sprintf("%s rolled %d+%d (no doubles) and stays in Prison No. 13 (%d/3).", cur.Name, d1, d2, cur.JailTurns),
+			fmt.Sprintf("%s выбросил %d+%d (без дубля) и остаётся в Тюрьме № 13 (%d/3).", cur.Name, d1, d2, cur.JailTurns),
 		)
 		e.State.Phase = PhaseAction
 		return nil
@@ -402,9 +397,9 @@ func (e *Engine) RollDice(playerID string) error {
 		e.State.DoublesCount++
 		if e.State.DoublesCount >= 3 {
 			e.addLog("jail",
-				fmt.Sprintf("🚨 %s a dat 3 duble la rând (%d+%d)! CNA te trimite direct la Penitenciarul Nr. 13!", cur.Name, d1, d2),
-				fmt.Sprintf("🚨 %s rolled 3 consecutive doubles (%d+%d)! Sent directly to Prison No. 13!", cur.Name, d1, d2),
-				fmt.Sprintf("🚨 %s выбросил 3 дубля подряд (%d+%d)! Отправлен прямо в Тюрьму № 13!", cur.Name, d1, d2),
+				fmt.Sprintf("%s a dat 3 duble consecutiv (%d+%d)! Trimis direct la Penitenciarul Nr. 13!", cur.Name, d1, d2),
+				fmt.Sprintf("%s rolled 3 consecutive doubles (%d+%d)! Sent directly to Prison No. 13!", cur.Name, d1, d2),
+				fmt.Sprintf("%s выбросил 3 дубля подряд (%d+%d)! Отправлен прямо в Тюрьму № 13!", cur.Name, d1, d2),
 			)
 			e.sendToJail(cur)
 			return nil
@@ -429,9 +424,9 @@ func (e *Engine) movePlayerBySteps(p *Player, steps int, allowExtraRoll bool) {
 	tile := e.State.Tiles[newPos]
 	d1, d2 := e.State.LastDice[0], e.State.LastDice[1]
 	e.addLog("info",
-		fmt.Sprintf("🎲 %s a dat %d+%d=%d și a ajuns pe «%s».", p.Name, d1, d2, d1+d2, tile.Name.RO),
-		fmt.Sprintf("🎲 %s rolled %d+%d=%d and landed on '%s'.", p.Name, d1, d2, d1+d2, tile.Name.EN),
-		fmt.Sprintf("🎲 %s выбросил %d+%d=%d и попал на «%s».", p.Name, d1, d2, d1+d2, tile.Name.RU),
+		fmt.Sprintf("%s a aruncat %d+%d=%d și a ajuns pe «%s».", p.Name, d1, d2, d1+d2, tile.Name.RO),
+		fmt.Sprintf("%s rolled %d+%d=%d and landed on '%s'.", p.Name, d1, d2, d1+d2, tile.Name.EN),
+		fmt.Sprintf("%s выбросил %d+%d=%d и попал на «%s».", p.Name, d1, d2, d1+d2, tile.Name.RU),
 	)
 
 	if passedGo {
@@ -441,9 +436,9 @@ func (e *Engine) movePlayerBySteps(p *Player, steps int, allowExtraRoll bool) {
 		}
 		p.Cash += goReward
 		e.addLog("info",
-			fmt.Sprintf("💸 %s a trecut pe la START (Ziua de Salariu) și a încasat %d MDL!", p.Name, goReward),
-			fmt.Sprintf("💸 %s passed GO (Payday) and collected %d MDL!", p.Name, goReward),
-			fmt.Sprintf("💸 %s прошёл СТАРТ (День зарплаты) и получил %d MDL!", p.Name, goReward),
+			fmt.Sprintf("%s a trecut pe la START (Ziua de Salariu) și a încasat %d MDL.", p.Name, goReward),
+			fmt.Sprintf("%s passed GO (Payday) and collected %d MDL.", p.Name, goReward),
+			fmt.Sprintf("%s прошёл СТАРТ (День зарплаты) и получил %d MDL.", p.Name, goReward),
 		)
 	}
 
@@ -455,9 +450,9 @@ func (e *Engine) movePlayerToIndex(p *Player, targetIdx int, collectGo bool, ren
 	if collectGo && targetIdx < oldPos && targetIdx != 10 {
 		p.Cash += 200
 		e.addLog("info",
-			fmt.Sprintf("💸 %s a trecut pe la START și a încasat 200 MDL!", p.Name),
-			fmt.Sprintf("💸 %s passed GO and collected 200 MDL!", p.Name),
-			fmt.Sprintf("💸 %s прошёл СТАРТ и получил 200 MDL!", p.Name),
+			fmt.Sprintf("%s a trecut pe la START și a încasat 200 MDL.", p.Name),
+			fmt.Sprintf("%s passed GO and collected 200 MDL.", p.Name),
+			fmt.Sprintf("%s прошёл СТАРТ и получил 200 MDL.", p.Name),
 		)
 	} else if collectGo && targetIdx == 0 && oldPos != 0 {
 		goReward := 200
@@ -466,9 +461,9 @@ func (e *Engine) movePlayerToIndex(p *Player, targetIdx int, collectGo bool, ren
 		}
 		p.Cash += goReward
 		e.addLog("info",
-			fmt.Sprintf("💸 %s a ajuns pe START și a încasat %d MDL!", p.Name, goReward),
-			fmt.Sprintf("💸 %s landed on GO and collected %d MDL!", p.Name, goReward),
-			fmt.Sprintf("💸 %s попал на СТАРТ и получил %d MDL!", p.Name, goReward),
+			fmt.Sprintf("%s a ajuns pe START și a încasat %d MDL.", p.Name, goReward),
+			fmt.Sprintf("%s landed on GO and collected %d MDL.", p.Name, goReward),
+			fmt.Sprintf("%s попал на СТАРТ и получил %d MDL.", p.Name, goReward),
 		)
 	}
 	p.Position = targetIdx
@@ -495,18 +490,18 @@ func (e *Engine) resolveTileLanding(p *Player, tile *Tile, rentMultiplier int) {
 			e.State.FreeParkingPot = 0
 			p.Cash += pot
 			e.addLog("info",
-				fmt.Sprintf("🏛️ %s a câștigat fondul de la Arcul de Triumf: +%d MDL!", p.Name, pot),
-				fmt.Sprintf("🏛️ %s won the Triumphal Arch Free Parking jackpot: +%d MDL!", p.Name, pot),
-				fmt.Sprintf("🏛️ %s сорвал куш Бесплатной Парковки у Арки Победы: +%d MDL!", p.Name, pot),
+				fmt.Sprintf("%s a încasat fondul de la Arcul de Triumf: +%d MDL!", p.Name, pot),
+				fmt.Sprintf("%s collected the Triumphal Arch Free Parking pot: +%d MDL!", p.Name, pot),
+				fmt.Sprintf("%s получил фонд Бесплатной Парковки у Арки Победы: +%d MDL!", p.Name, pot),
 			)
 		}
 		e.finishPostLandingPhase()
 
 	case TileGoToJail:
 		e.addLog("jail",
-			fmt.Sprintf("🚨 %s a fost reținut de CNA și trimis la Penitenciarul Nr. 13!", p.Name),
-			fmt.Sprintf("🚨 %s was detained by CNA and sent to Prison No. 13!", p.Name),
-			fmt.Sprintf("🚨 %s задержан НЦБК и отправлен в Тюрьму № 13!", p.Name),
+			fmt.Sprintf("%s a fost reținut de CNA și trimis la Penitenciarul Nr. 13!", p.Name),
+			fmt.Sprintf("%s was detained by CNA and sent to Prison No. 13!", p.Name),
+			fmt.Sprintf("%s задержан НЦБК и отправлен в Тюрьму № 13!", p.Name),
 		)
 		e.sendToJail(p)
 
@@ -536,9 +531,9 @@ func (e *Engine) resolveTileLanding(p *Player, tile *Tile, rentMultiplier int) {
 		}
 		if tile.Mortgaged {
 			e.addLog("info",
-				fmt.Sprintf("🏦 «%s» este gajată la bancă — nu se plătește chirie.", tile.Name.RO),
-				fmt.Sprintf("🏦 '%s' is mortgaged — no rent is due.", tile.Name.EN),
-				fmt.Sprintf("🏦 «%s» заложена в банке — аренда не взимается.", tile.Name.RU),
+				fmt.Sprintf("«%s» este ipotecată — nu se percepe chirie.", tile.Name.RO),
+				fmt.Sprintf("'%s' is mortgaged — no rent is due.", tile.Name.EN),
+				fmt.Sprintf("«%s» в залоге — аренда не взимается.", tile.Name.RU),
 			)
 			e.finishPostLandingPhase()
 			return
@@ -550,9 +545,9 @@ func (e *Engine) resolveTileLanding(p *Player, tile *Tile, rentMultiplier int) {
 		}
 		rent := e.CalculateRent(tile) * rentMultiplier
 		e.addLog("rent",
-			fmt.Sprintf("💰 %s îi plătește %d MDL chirie lui %s pentru «%s».", p.Name, rent, owner.Name, tile.Name.RO),
-			fmt.Sprintf("💰 %s pays %d MDL rent to %s for '%s'.", p.Name, rent, owner.Name, tile.Name.EN),
-			fmt.Sprintf("💰 %s платит %d MDL аренды игроку %s за «%s».", p.Name, rent, owner.Name, tile.Name.RU),
+			fmt.Sprintf("%s îi achită %d MDL chirie lui %s pentru «%s».", p.Name, rent, owner.Name, tile.Name.RO),
+			fmt.Sprintf("%s pays %d MDL rent to %s for '%s'.", p.Name, rent, owner.Name, tile.Name.EN),
+			fmt.Sprintf("%s платит %d MDL аренды игроку %s за «%s».", p.Name, rent, owner.Name, tile.Name.RU),
 		)
 		e.chargePlayer(p, owner.ID, rent, tile.Name)
 	}
@@ -639,9 +634,9 @@ func (e *Engine) applyCard(p *Player, card Card) {
 	c := card
 	e.State.LastDrawnCard = &c
 	e.addLog("card",
-		fmt.Sprintf("🃏 %s a tras cartea «%s»: %s", p.Name, card.Title.RO, card.Description.RO),
-		fmt.Sprintf("🃏 %s drew '%s': %s", p.Name, card.Title.EN, card.Description.EN),
-		fmt.Sprintf("🃏 %s вытянул «%s»: %s", p.Name, card.Title.RU, card.Description.RU),
+		fmt.Sprintf("%s a tras cartea «%s»: %s", p.Name, card.Title.RO, card.Description.RO),
+		fmt.Sprintf("%s drew '%s': %s", p.Name, card.Title.EN, card.Description.EN),
+		fmt.Sprintf("%s вытянул «%s»: %s", p.Name, card.Title.RU, card.Description.RU),
 	)
 
 	switch card.Effect {
@@ -672,7 +667,6 @@ func (e *Engine) applyCard(p *Player, card Card) {
 
 	case EffectEachPlayer:
 		if card.Value > 0 {
-			// Collect from each active player
 			total := 0
 			for _, other := range e.State.Players {
 				if other.ID != p.ID && !other.Bankrupt {
@@ -687,7 +681,6 @@ func (e *Engine) applyCard(p *Player, card Card) {
 			p.Cash += total
 			e.finishPostLandingPhase()
 		} else {
-			// Pay each active player
 			perPlayer := -card.Value
 			activeOthers := 0
 			for _, other := range e.State.Players {
@@ -765,7 +758,6 @@ func (e *Engine) chargePlayer(debtor *Player, creditorID string, amount int, rea
 		e.finishPostLandingPhase()
 		return
 	}
-	// Player does not have enough cash on hand -> enter PhaseDebt
 	e.setDebt(debtor, creditorID, amount, reason)
 }
 
@@ -778,9 +770,9 @@ func (e *Engine) setDebt(debtor *Player, creditorID string, amount int, reason L
 	}
 	e.State.Phase = PhaseDebt
 	e.addLog("tax",
-		fmt.Sprintf("⚠️ %s are o datorie de %d MDL (disponibil: %d MDL). Vinde case, gajează proprietăți sau declară faliment!", debtor.Name, amount, debtor.Cash),
-		fmt.Sprintf("⚠️ %s owes %d MDL (available: %d MDL). Sell houses, mortgage properties, or declare bankruptcy!", debtor.Name, amount, debtor.Cash),
-		fmt.Sprintf("⚠️ %s должен %d MDL (доступно: %d MDL). Продайте дома, заложите имущество или объявите банкротство!", debtor.Name, amount, debtor.Cash),
+		fmt.Sprintf("%s are o datorie scadentă de %d MDL (disponibil: %d MDL).", debtor.Name, amount, debtor.Cash),
+		fmt.Sprintf("%s owes %d MDL (available: %d MDL).", debtor.Name, amount, debtor.Cash),
+		fmt.Sprintf("%s должен %d MDL (доступно: %d MDL).", debtor.Name, amount, debtor.Cash),
 	)
 }
 
@@ -804,9 +796,9 @@ func (e *Engine) PayDebt(playerID string) error {
 	}
 	e.State.PendingDebt = nil
 	e.addLog("info",
-		fmt.Sprintf("✅ %s și-a achitat datoria de %d MDL!", p.Name, debt.Amount),
-		fmt.Sprintf("✅ %s paid off the %d MDL debt!", p.Name, debt.Amount),
-		fmt.Sprintf("✅ %s погасил долг в размере %d MDL!", p.Name, debt.Amount),
+		fmt.Sprintf("%s a achitat integral datoria de %d MDL.", p.Name, debt.Amount),
+		fmt.Sprintf("%s paid off the %d MDL debt.", p.Name, debt.Amount),
+		fmt.Sprintf("%s полностью погасил долг %d MDL.", p.Name, debt.Amount),
 	)
 	e.finishPostLandingPhase()
 	return nil
@@ -818,16 +810,15 @@ func (e *Engine) finishPostLandingPhase() {
 		e.State.Phase = PhaseRoll
 		e.State.HasRolled = false
 		e.addLog("info",
-			fmt.Sprintf("🎲 Dublă! %s mai dă o dată cu zarul.", cur.Name),
-			fmt.Sprintf("🎲 Doubles! %s gets to roll again.", cur.Name),
-			fmt.Sprintf("🎲 Дубль! %s бросает кубики ещё раз.", cur.Name),
+			fmt.Sprintf("Dublă! %s primește încă o aruncare.", cur.Name),
+			fmt.Sprintf("Doubles! %s gets an extra roll.", cur.Name),
+			fmt.Sprintf("Дубль! %s получает дополнительный бросок.", cur.Name),
 		)
 		return
 	}
 	e.State.Phase = PhaseAction
 }
 
-// BuyProperty buys the unowned tile the current player landed on.
 func (e *Engine) BuyProperty(playerID string) error {
 	cur := e.CurrentPlayer()
 	if cur == nil || cur.ID != playerID {
@@ -849,15 +840,14 @@ func (e *Engine) BuyProperty(playerID string) error {
 	tile.Houses = 0
 
 	e.addLog("buy",
-		fmt.Sprintf("🏠 %s a cumpărat «%s» pentru %d MDL!", cur.Name, tile.Name.RO, tile.Price),
-		fmt.Sprintf("🏠 %s bought '%s' for %d MDL!", cur.Name, tile.Name.EN, tile.Price),
-		fmt.Sprintf("🏠 %s купил «%s» за %d MDL!", cur.Name, tile.Name.RU, tile.Price),
+		fmt.Sprintf("%s a achiziționat «%s» pentru %d MDL.", cur.Name, tile.Name.RO, tile.Price),
+		fmt.Sprintf("%s purchased '%s' for %d MDL.", cur.Name, tile.Name.EN, tile.Price),
+		fmt.Sprintf("%s приобрёл «%s» за %d MDL.", cur.Name, tile.Name.RU, tile.Price),
 	)
 	e.finishPostLandingPhase()
 	return nil
 }
 
-// DeclineProperty triggers an interactive auction (or skips if auctions disabled).
 func (e *Engine) DeclineProperty(playerID string) error {
 	cur := e.CurrentPlayer()
 	if cur == nil || cur.ID != playerID {
@@ -881,9 +871,9 @@ func (e *Engine) DeclineProperty(playerID string) error {
 	}
 	e.State.Phase = PhaseAuction
 	e.addLog("info",
-		fmt.Sprintf("🔨 Licitație deschisă pentru «%s»! Preț de pornire: 10 MDL.", tile.Name.RO),
-		fmt.Sprintf("🔨 Auction started for '%s'! Starting bid: 10 MDL.", tile.Name.EN),
-		fmt.Sprintf("🔨 Начался аукцион за «%s»! Стартовая цена: 10 MDL.", tile.Name.RU),
+		fmt.Sprintf("Licitație deschisă pentru «%s»! Preț de pornire: 10 MDL.", tile.Name.RO),
+		fmt.Sprintf("Auction started for '%s'! Starting bid: 10 MDL.", tile.Name.EN),
+		fmt.Sprintf("Открыт аукцион за «%s»! Стартовая ставка: 10 MDL.", tile.Name.RU),
 	)
 	return nil
 }
@@ -911,9 +901,9 @@ func (e *Engine) PlaceBid(playerID string, amount int) error {
 	auc.HighestBidderID = playerID
 	tile := e.State.Tiles[auc.TileIndex]
 	e.addLog("buy",
-		fmt.Sprintf("🔨 %s licitează %d MDL pentru «%s»!", p.Name, amount, tile.Name.RO),
-		fmt.Sprintf("🔨 %s bids %d MDL for '%s'!", p.Name, amount, tile.Name.EN),
-		fmt.Sprintf("🔨 %s ставит %d MDL за «%s»!", p.Name, amount, tile.Name.RU),
+		fmt.Sprintf("%s licitează %d MDL pentru «%s».", p.Name, amount, tile.Name.RO),
+		fmt.Sprintf("%s bids %d MDL for '%s'.", p.Name, amount, tile.Name.EN),
+		fmt.Sprintf("%s ставит %d MDL за «%s».", p.Name, amount, tile.Name.RU),
 	)
 	e.advanceAuctionTurn(playerID)
 	return nil
@@ -935,7 +925,6 @@ func (e *Engine) advanceAuctionTurn(lastPlayerID string) {
 		return
 	}
 
-	// Count remaining eligible bidders
 	eligible := make([]*Player, 0)
 	for _, p := range e.State.Players {
 		if !p.Bankrupt && !auc.PassedPlayers[p.ID] {
@@ -943,13 +932,11 @@ func (e *Engine) advanceAuctionTurn(lastPlayerID string) {
 		}
 	}
 
-	// If no one left or only highest bidder remains
 	if len(eligible) == 0 || (len(eligible) == 1 && eligible[0].ID == auc.HighestBidderID) {
 		e.concludeAuction()
 		return
 	}
 
-	// Advance ActiveBidderID to next eligible player
 	startIdx := 0
 	for i, p := range e.State.Players {
 		if p.ID == lastPlayerID {
@@ -980,23 +967,22 @@ func (e *Engine) concludeAuction() {
 			tile.Mortgaged = false
 			tile.Houses = 0
 			e.addLog("buy",
-				fmt.Sprintf("🏆 %s a câștigat licitația pentru «%s» cu %d MDL!", winner.Name, tile.Name.RO, auc.CurrentBid),
-				fmt.Sprintf("🏆 %s won the auction for '%s' at %d MDL!", winner.Name, tile.Name.EN, auc.CurrentBid),
-				fmt.Sprintf("🏆 %s выиграл аукцион за «%s» за %d MDL!", winner.Name, tile.Name.RU, auc.CurrentBid),
+				fmt.Sprintf("%s a adjudecat «%s» la licitație pentru %d MDL!", winner.Name, tile.Name.RO, auc.CurrentBid),
+				fmt.Sprintf("%s won the auction for '%s' at %d MDL!", winner.Name, tile.Name.EN, auc.CurrentBid),
+				fmt.Sprintf("%s выиграл аукцион за «%s» за %d MDL!", winner.Name, tile.Name.RU, auc.CurrentBid),
 			)
 		}
 	} else {
 		e.addLog("info",
-			fmt.Sprintf("🔨 Nimeni nu a licitat pentru «%s». Proprietatea rămâne la bancă.", tile.Name.RO),
-			fmt.Sprintf("🔨 No one bid on '%s'. Property remains unowned.", tile.Name.EN),
-			fmt.Sprintf("🔨 Никто не сделал ставку на «%s». Объект остаётся у банка.", tile.Name.RU),
+			fmt.Sprintf("Licitația pentru «%s» s-a încheiat fără oferte.", tile.Name.RO),
+			fmt.Sprintf("Auction for '%s' ended with no bids.", tile.Name.EN),
+			fmt.Sprintf("Аукцион за «%s» завершился без ставок.", tile.Name.RU),
 		)
 	}
 	e.State.Auction = nil
 	e.finishPostLandingPhase()
 }
 
-// BuildHouse builds 1 house (or hotel if 4 houses exist) following Monopoly's Even Build rule.
 func (e *Engine) BuildHouse(playerID string, tileIdx int) error {
 	if tileIdx < 0 || tileIdx >= len(e.State.Tiles) {
 		return errors.New("invalid tile index")
@@ -1019,7 +1005,6 @@ func (e *Engine) BuildHouse(playerID string, tileIdx int) error {
 		return errors.New("insufficient MDL to build")
 	}
 
-	// Check Even Building rule: cannot build if tile already has > min houses in group
 	minHouses := 5
 	for _, t := range e.State.Tiles {
 		if t.Group == tile.Group {
@@ -1052,17 +1037,16 @@ func (e *Engine) BuildHouse(playerID string, tileIdx int) error {
 	tile.Houses++
 	labelRO, labelEN, labelRU := "o casă", "a house", "дом"
 	if tile.Houses == 5 {
-		labelRO, labelEN, labelRU = "un hotel / vinărie de lux", "a luxury hotel", "отель"
+		labelRO, labelEN, labelRU = "un hotel de lux", "a luxury hotel", "отель"
 	}
 	e.addLog("buy",
-		fmt.Sprintf("🏗️ %s a construit %s pe «%s» (-%d MDL).", p.Name, labelRO, tile.Name.RO, tile.HouseCost),
-		fmt.Sprintf("🏗️ %s built %s on '%s' (-%d MDL).", p.Name, labelEN, tile.Name.EN, tile.HouseCost),
-		fmt.Sprintf("🏗️ %s построил %s на «%s» (-%d MDL).", p.Name, labelRU, tile.Name.RU, tile.HouseCost),
+		fmt.Sprintf("%s a construit %s pe «%s» (-%d MDL).", p.Name, labelRO, tile.Name.RO, tile.HouseCost),
+		fmt.Sprintf("%s built %s on '%s' (-%d MDL).", p.Name, labelEN, tile.Name.EN, tile.HouseCost),
+		fmt.Sprintf("%s построил %s на «%s» (-%d MDL).", p.Name, labelRU, tile.Name.RU, tile.HouseCost),
 	)
 	return nil
 }
 
-// SellHouse sells 1 house/hotel back to the bank for 50% of HouseCost following Even Selling rule.
 func (e *Engine) SellHouse(playerID string, tileIdx int) error {
 	if tileIdx < 0 || tileIdx >= len(e.State.Tiles) {
 		return errors.New("invalid tile index")
@@ -1076,7 +1060,6 @@ func (e *Engine) SellHouse(playerID string, tileIdx int) error {
 		return errors.New("no houses to sell on this property")
 	}
 
-	// Even sell rule: must sell from most-developed property in color group first
 	maxHouses := 0
 	for _, t := range e.State.Tiles {
 		if t.Group == tile.Group && t.Houses > maxHouses {
@@ -1101,14 +1084,13 @@ func (e *Engine) SellHouse(playerID string, tileIdx int) error {
 	p.Cash += refund
 
 	e.addLog("info",
-		fmt.Sprintf("🏚️ %s a vândut o construcție de pe «%s» pentru +%d MDL.", p.Name, tile.Name.RO, refund),
-		fmt.Sprintf("🏚️ %s sold a building on '%s' for +%d MDL.", p.Name, tile.Name.EN, refund),
-		fmt.Sprintf("🏚️ %s продал постройку на «%s» за +%d MDL.", p.Name, tile.Name.RU, refund),
+		fmt.Sprintf("%s a vândut o clădire de pe «%s» (+%d MDL).", p.Name, tile.Name.RO, refund),
+		fmt.Sprintf("%s sold a building on '%s' (+%d MDL).", p.Name, tile.Name.EN, refund),
+		fmt.Sprintf("%s продал постройку на «%s» (+%d MDL).", p.Name, tile.Name.RU, refund),
 	)
 	return nil
 }
 
-// MortgageProperty mortgages an unimproved property for 50% of its purchase price.
 func (e *Engine) MortgageProperty(playerID string, tileIdx int) error {
 	if tileIdx < 0 || tileIdx >= len(e.State.Tiles) {
 		return errors.New("invalid tile index")
@@ -1121,7 +1103,6 @@ func (e *Engine) MortgageProperty(playerID string, tileIdx int) error {
 	if tile.Mortgaged {
 		return errors.New("property is already mortgaged")
 	}
-	// Cannot mortgage if any property in the color group has houses
 	for _, t := range e.State.Tiles {
 		if t.Group == tile.Group && tile.Group != GroupNone && t.Houses > 0 {
 			return errors.New("must sell all houses in this color group before mortgaging")
@@ -1133,14 +1114,13 @@ func (e *Engine) MortgageProperty(playerID string, tileIdx int) error {
 	p.Cash += mortgageValue
 
 	e.addLog("info",
-		fmt.Sprintf("🏦 %s a gajat «%s» la bancă pentru +%d MDL.", p.Name, tile.Name.RO, mortgageValue),
-		fmt.Sprintf("🏦 %s mortgaged '%s' for +%d MDL.", p.Name, tile.Name.EN, mortgageValue),
-		fmt.Sprintf("🏦 %s заложил «%s» в банк за +%d MDL.", p.Name, tile.Name.RU, mortgageValue),
+		fmt.Sprintf("%s a ipotecat «%s» pentru +%d MDL.", p.Name, tile.Name.RO, mortgageValue),
+		fmt.Sprintf("%s mortgaged '%s' for +%d MDL.", p.Name, tile.Name.EN, mortgageValue),
+		fmt.Sprintf("%s заложил «%s» за +%d MDL.", p.Name, tile.Name.RU, mortgageValue),
 	)
 	return nil
 }
 
-// UnmortgageProperty unmortgages a property by paying 55% of its purchase price (mortgage + 10% interest).
 func (e *Engine) UnmortgageProperty(playerID string, tileIdx int) error {
 	if tileIdx < 0 || tileIdx >= len(e.State.Tiles) {
 		return errors.New("invalid tile index")
@@ -1162,14 +1142,13 @@ func (e *Engine) UnmortgageProperty(playerID string, tileIdx int) error {
 	tile.Mortgaged = false
 
 	e.addLog("info",
-		fmt.Sprintf("🔓 %s a răscumpărat ipoteca pentru «%s» (-%d MDL).", p.Name, tile.Name.RO, cost),
-		fmt.Sprintf("🔓 %s unmortgaged '%s' (-%d MDL).", p.Name, tile.Name.EN, cost),
-		fmt.Sprintf("🔓 %s выкупил залог «%s» (-%d MDL).", p.Name, tile.Name.RU, cost),
+		fmt.Sprintf("%s a ridicat ipoteca de pe «%s» (-%d MDL).", p.Name, tile.Name.RO, cost),
+		fmt.Sprintf("%s unmortgaged '%s' (-%d MDL).", p.Name, tile.Name.EN, cost),
+		fmt.Sprintf("%s выкупил залог «%s» (-%d MDL).", p.Name, tile.Name.RU, cost),
 	)
 	return nil
 }
 
-// ProposeTrade creates a trade offer between two players.
 func (e *Engine) ProposeTrade(offer TradeOffer) (*TradeOffer, error) {
 	from := e.GetPlayer(offer.FromPlayerID)
 	to := e.GetPlayer(offer.ToPlayerID)
@@ -1202,12 +1181,11 @@ func (e *Engine) ProposeTrade(offer TradeOffer) (*TradeOffer, error) {
 	e.State.Trades = append(e.State.Trades, &offer)
 
 	e.addLog("trade",
-		fmt.Sprintf("🤝 %s i-a propus o afacere lui %s.", from.Name, to.Name),
-		fmt.Sprintf("🤝 %s proposed a trade to %s.", from.Name, to.Name),
-		fmt.Sprintf("🤝 %s предложил сделку игроку %s.", from.Name, to.Name),
+		fmt.Sprintf("%s i-a trimis o ofertă comercială lui %s.", from.Name, to.Name),
+		fmt.Sprintf("%s proposed a trade to %s.", from.Name, to.Name),
+		fmt.Sprintf("%s предложил сделку игроку %s.", from.Name, to.Name),
 	)
 
-	// If recipient is a bot, evaluate immediately
 	if to.IsBot {
 		e.evaluateBotTrade(&offer)
 	}
@@ -1234,9 +1212,9 @@ func (e *Engine) RespondTrade(tradeID, playerID string, accept bool) error {
 		to := e.GetPlayer(tr.ToPlayerID)
 		if from != nil && to != nil {
 			e.addLog("trade",
-				fmt.Sprintf("❌ Tranzacția dintre %s și %s a fost anulată/refuzată.", from.Name, to.Name),
-				fmt.Sprintf("❌ Trade between %s and %s was declined/cancelled.", from.Name, to.Name),
-				fmt.Sprintf("❌ Сделка между %s и %s была отклонена.", from.Name, to.Name),
+				fmt.Sprintf("Tranzacția dintre %s și %s a fost refuzată.", from.Name, to.Name),
+				fmt.Sprintf("Trade between %s and %s was declined.", from.Name, to.Name),
+				fmt.Sprintf("Сделка между %s и %s была отклонена.", from.Name, to.Name),
 			)
 		}
 		return nil
@@ -1275,14 +1253,13 @@ func (e *Engine) RespondTrade(tradeID, playerID string, accept bool) error {
 	tr.Status = "ACCEPTED"
 
 	e.addLog("trade",
-		fmt.Sprintf("🤝 Afacere bătută în palmă între %s și %s!", from.Name, to.Name),
-		fmt.Sprintf("🤝 Trade completed between %s and %s!", from.Name, to.Name),
-		fmt.Sprintf("🤝 Сделка между %s и %s успешно заключена!", from.Name, to.Name),
+		fmt.Sprintf("Tranzacție încheiată între %s și %s.", from.Name, to.Name),
+		fmt.Sprintf("Trade completed between %s and %s.", from.Name, to.Name),
+		fmt.Sprintf("Сделка между %s и %s успешно заключена.", from.Name, to.Name),
 	)
 	return nil
 }
 
-// DeclareBankruptcy eliminates the player and transfers assets to creditor or bank.
 func (e *Engine) DeclareBankruptcy(playerID string) error {
 	p := e.GetPlayer(playerID)
 	if p == nil || p.Bankrupt {
@@ -1294,7 +1271,6 @@ func (e *Engine) DeclareBankruptcy(playerID string) error {
 		creditorID = e.State.PendingDebt.CreditorID
 	}
 
-	// Sell all houses back first
 	for _, t := range e.State.Tiles {
 		if t.OwnerID == p.ID && t.Houses > 0 {
 			if t.Houses == 5 {
@@ -1320,7 +1296,6 @@ func (e *Engine) DeclareBankruptcy(playerID string) error {
 			}
 		}
 	} else {
-		// Bankrupt to Bank: return properties to unowned
 		for _, t := range e.State.Tiles {
 			if t.OwnerID == p.ID {
 				t.OwnerID = ""
@@ -1339,12 +1314,11 @@ func (e *Engine) DeclareBankruptcy(playerID string) error {
 	}
 
 	e.addLog("bankrupt",
-		fmt.Sprintf("💸 %s a intrat în faliment și a plecat la muncă în diaspora!", p.Name),
-		fmt.Sprintf("💸 %s declared bankruptcy and left for the diaspora!", p.Name),
-		fmt.Sprintf("💸 %s объявил банкротство и уехал на заработки!", p.Name),
+		fmt.Sprintf("%s a intrat în insolvență și a părăsit jocul.", p.Name),
+		fmt.Sprintf("%s declared bankruptcy and left the game.", p.Name),
+		fmt.Sprintf("%s объявил банкротство и выбыл из игры.", p.Name),
 	)
 
-	// Check if only 1 solvent player remains
 	active := make([]*Player, 0)
 	for _, pl := range e.State.Players {
 		if !pl.Bankrupt {
@@ -1355,9 +1329,9 @@ func (e *Engine) DeclareBankruptcy(playerID string) error {
 		e.State.WinnerID = active[0].ID
 		e.State.Phase = PhaseGameOver
 		e.addLog("info",
-			fmt.Sprintf("👑 %s a devenit Magnul Imobiliar al Chișinăului și a câștigat jocul!", active[0].Name),
-			fmt.Sprintf("👑 %s became the Real Estate Mogul of Chișinău and won the game!", active[0].Name),
-			fmt.Sprintf("👑 %s стал главным магнатом Кишинёва и победил в игре!", active[0].Name),
+			fmt.Sprintf("%s a devenit Magnatul Imobiliar al Chișinăului și a câștigat partida!", active[0].Name),
+			fmt.Sprintf("%s became the Real Estate Mogul of Chișinău and won the match!", active[0].Name),
+			fmt.Sprintf("%s стал главным магнатом Кишинёва и победил в игре!", active[0].Name),
 		)
 		return nil
 	}
@@ -1368,7 +1342,6 @@ func (e *Engine) DeclareBankruptcy(playerID string) error {
 	return nil
 }
 
-// EndTurn finishes the current player's turn and passes to the next solvent player.
 func (e *Engine) EndTurn(playerID string) error {
 	cur := e.CurrentPlayer()
 	if cur == nil || cur.ID != playerID {
@@ -1403,13 +1376,11 @@ func (e *Engine) advanceToNextPlayer() {
 	}
 }
 
-// StepBot executes one intelligent action if a bot needs to act (either on its turn or during an auction).
 func (e *Engine) StepBot() bool {
 	if e.State.Phase == PhaseLobby || e.State.Phase == PhaseGameOver {
 		return false
 	}
 
-	// 1. Check if an auction is waiting on a bot
 	if e.State.Phase == PhaseAuction && e.State.Auction != nil {
 		auc := e.State.Auction
 		bidder := e.GetPlayer(auc.ActiveBidderID)
@@ -1471,7 +1442,6 @@ func (e *Engine) StepBot() bool {
 			_ = e.PayDebt(cur.ID)
 			return true
 		}
-		// Try selling a house first
 		for _, t := range e.State.Tiles {
 			if t.OwnerID == cur.ID && t.Houses > 0 {
 				if err := e.SellHouse(cur.ID, t.Index); err == nil {
@@ -1479,7 +1449,6 @@ func (e *Engine) StepBot() bool {
 				}
 			}
 		}
-		// Try mortgaging an unimproved property
 		for _, t := range e.State.Tiles {
 			if t.OwnerID == cur.ID && !t.Mortgaged && t.Houses == 0 {
 				if err := e.MortgageProperty(cur.ID, t.Index); err == nil {
@@ -1487,12 +1456,10 @@ func (e *Engine) StepBot() bool {
 				}
 			}
 		}
-		// No more assets to liquidate
 		_ = e.DeclareBankruptcy(cur.ID)
 		return true
 
 	case PhaseAction:
-		// Unmortgage if plenty of cash
 		for _, t := range e.State.Tiles {
 			if t.OwnerID == cur.ID && t.Mortgaged {
 				cost := (t.Price * 55) / 100
@@ -1503,7 +1470,6 @@ func (e *Engine) StepBot() bool {
 				}
 			}
 		}
-		// Build houses if owns monopoly and has comfortable buffer
 		for _, t := range e.State.Tiles {
 			if t.OwnerID == cur.ID && t.Type == TileProperty && t.Houses < 5 {
 				if cur.Cash >= t.HouseCost+250 {
@@ -1551,7 +1517,6 @@ func (e *Engine) evaluateBotTrade(tr *TradeOffer) {
 		}
 		requestedVal += val
 	}
-	// Bot accepts if offered value is at least 100% of requested value
 	if offeredVal >= requestedVal && requestedVal > 0 {
 		_ = e.RespondTrade(tr.ID, tr.ToPlayerID, true)
 	} else {

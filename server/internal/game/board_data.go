@@ -22,7 +22,7 @@ func NewChisinauBoard() []*Tile {
 				EN: "The parcel from Italy and your paycheck just arrived! Collect 200 MDL.",
 				RU: "Пришла посылка из Италии и зарплата на карту! Получите 200 MDL.",
 			},
-			Icon: "💸",
+			Icon: "go",
 		},
 		{
 			Index: 1,
@@ -46,7 +46,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     60,
 			HouseCost: 50,
 			Rents:     []int{2, 10, 30, 90, 160, 250},
-			Icon:      "🔧",
+			Icon:      "industrial",
 		},
 		{
 			Index: 2,
@@ -67,7 +67,7 @@ func NewChisinauBoard() []*Tile {
 				EN: "Relatives, godparents, and cash envelopes at the feast!",
 				RU: "Родственники, кумовья, нанаши и конверты за столом!",
 			},
-			Icon: "🎁",
+			Icon: "chest",
 		},
 		{
 			Index: 3,
@@ -91,7 +91,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     60,
 			HouseCost: 50,
 			Rents:     []int{4, 20, 60, 180, 320, 450},
-			Icon:      "📮",
+			Icon:      "post",
 		},
 		{
 			Index: 4,
@@ -113,7 +113,7 @@ func NewChisinauBoard() []*Tile {
 				RU: "Пришёл январский счёт за отопление и подоходный налог! Заплатите 200 MDL.",
 			},
 			TaxAmount: 200,
-			Icon:      "🧾",
+			Icon:      "tax",
 		},
 		{
 			Index: 5,
@@ -130,13 +130,13 @@ func NewChisinauBoard() []*Tile {
 				RU: "Алба-Юлия — Ворота Города",
 			},
 			Flavor: LocalizedText{
-				RO: "Legenda transportului chișinăuian! traversează tot orașul de la Buiucani la Botanica.",
+				RO: "Legenda transportului chișinăuian! Traversează tot orașul de la Buiucani la Botanica.",
 				EN: "The legend of Chișinău transit! Crosses the entire city from Buiucani to Botanica.",
 				RU: "Легенда кишинёвского транспорта! Пересекает весь город от Буюкан до Ботаники.",
 			},
 			Price: 200,
 			Rents: []int{25, 50, 100, 200},
-			Icon:  "🚎",
+			Icon:  "trolleybus",
 		},
 		{
 			Index: 6,
@@ -160,7 +160,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     100,
 			HouseCost: 50,
 			Rents:     []int{6, 30, 90, 270, 400, 550},
-			Icon:      "🌳",
+			Icon:      "avenue",
 		},
 		{
 			Index: 7,
@@ -181,7 +181,7 @@ func NewChisinauBoard() []*Tile {
 				EN: "In Moldova you never know what surprise awaits around the corner!",
 				RU: "В Молдове никогда не знаешь, где улыбнётся удача!",
 			},
-			Icon: "🍀",
+			Icon: "chance",
 		},
 		{
 			Index: 8,
@@ -205,7 +205,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     100,
 			HouseCost: 50,
 			Rents:     []int{6, 30, 90, 270, 400, 550},
-			Icon:      "🐬",
+			Icon:      "district",
 		},
 		{
 			Index: 9,
@@ -229,7 +229,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     120,
 			HouseCost: 50,
 			Rents:     []int{8, 40, 100, 300, 450, 600},
-			Icon:      "🦢",
+			Icon:      "park",
 		},
 		{
 			Index: 10,
@@ -250,7 +250,7 @@ func NewChisinauBoard() []*Tile {
 				EN: "If you're only visiting with a care package of sarmale, relax!",
 				RU: "Если вы просто пришли с передачей голубцов — проходите спокойно!",
 			},
-			Icon: "🚓",
+			Icon: "jail",
 		},
 		{
 			Index: 11,
@@ -274,7 +274,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     140,
 			HouseCost: 100,
 			Rents:     []int{10, 50, 150, 450, 625, 750},
-			Icon:      "🧀",
+			Icon:      "market",
 		},
 		{
 			Index: 12,
@@ -297,7 +297,7 @@ func NewChisinauBoard() []*Tile {
 			},
 			Price: 150,
 			Rents: []int{4, 10},
-			Icon:  "⚡",
+			Icon:  "electric",
 		},
 		{
 			Index: 13,
@@ -321,7 +321,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     140,
 			HouseCost: 100,
 			Rents:     []int{10, 50, 150, 450, 625, 750},
-			Icon:      "🍬",
+			Icon:      "factory",
 		},
 		{
 			Index: 14,
@@ -345,7 +345,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     160,
 			HouseCost: 100,
 			Rents:     []int{12, 60, 180, 500, 700, 900},
-			Icon:      "📡",
+			Icon:      "tower",
 		},
 		{
 			Index: 15,
@@ -368,7 +368,7 @@ func NewChisinauBoard() []*Tile {
 			},
 			Price: 200,
 			Rents: []int{25, 50, 100, 200},
-			Icon:  "🚐",
+			Icon:  "rutiera",
 		},
 		{
 			Index: 16,
@@ -392,7 +392,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     180,
 			HouseCost: 100,
 			Rents:     []int{14, 70, 200, 550, 750, 950},
-			Icon:      "🍕",
+			Icon:      "boulevard",
 		},
 		{
 			Index: 17,
@@ -413,7 +413,7 @@ func NewChisinauBoard() []*Tile {
 				EN: "The table is loaded with răcituri, sarmale, and homemade wine!",
 				RU: "Стол ломится от холодца, голубцов и домашнего вина!",
 			},
-			Icon: "🎁",
+			Icon: "chest",
 		},
 		{
 			Index: 18,
@@ -437,7 +437,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     180,
 			HouseCost: 100,
 			Rents:     []int{14, 70, 200, 550, 750, 950},
-			Icon:      "🎪",
+			Icon:      "circus",
 		},
 		{
 			Index: 19,
@@ -461,7 +461,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     200,
 			HouseCost: 100,
 			Rents:     []int{16, 80, 220, 600, 800, 1000},
-			Icon:      "🚦",
+			Icon:      "junction",
 		},
 		{
 			Index: 20,
@@ -482,7 +482,7 @@ func NewChisinauBoard() []*Tile {
 				EN: "You miraculously found a free parking spot right in the heart of downtown Chișinău!",
 				RU: "Вы чудом нашли бесплатную парковку прямо в самом центре Кишинёва!",
 			},
-			Icon: "🏛️",
+			Icon: "arch",
 		},
 		{
 			Index: 21,
@@ -506,7 +506,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     220,
 			HouseCost: 150,
 			Rents:     []int{18, 90, 250, 700, 875, 1050},
-			Icon:      "🏙️",
+			Icon:      "gates",
 		},
 		{
 			Index: 22,
@@ -527,7 +527,7 @@ func NewChisinauBoard() []*Tile {
 				EN: "Maybe you win a fortune, or maybe you pay a traffic fine!",
 				RU: "То ли куш сорвёшь, то ли штраф патрулю заплатишь!",
 			},
-			Icon: "🍀",
+			Icon: "chance",
 		},
 		{
 			Index: 23,
@@ -551,7 +551,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     220,
 			HouseCost: 150,
 			Rents:     []int{18, 90, 250, 700, 875, 1050},
-			Icon:      "🦚",
+			Icon:      "garden",
 		},
 		{
 			Index: 24,
@@ -575,7 +575,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     240,
 			HouseCost: 150,
 			Rents:     []int{20, 100, 300, 750, 925, 1100},
-			Icon:      "🌹",
+			Icon:      "mall",
 		},
 		{
 			Index: 25,
@@ -598,7 +598,7 @@ func NewChisinauBoard() []*Tile {
 			},
 			Price: 200,
 			Rents: []int{25, 50, 100, 200},
-			Icon:  "🚂",
+			Icon:  "train",
 		},
 		{
 			Index: 26,
@@ -622,7 +622,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     260,
 			HouseCost: 150,
 			Rents:     []int{22, 110, 330, 800, 975, 1150},
-			Icon:      "⛰️",
+			Icon:      "monastery",
 		},
 		{
 			Index: 27,
@@ -646,7 +646,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     260,
 			HouseCost: 150,
 			Rents:     []int{22, 110, 330, 800, 975, 1150},
-			Icon:      "🏰",
+			Icon:      "fortress",
 		},
 		{
 			Index: 28,
@@ -669,7 +669,7 @@ func NewChisinauBoard() []*Tile {
 			},
 			Price: 150,
 			Rents: []int{4, 10},
-			Icon:  "🔥",
+			Icon:  "gas",
 		},
 		{
 			Index: 29,
@@ -693,7 +693,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     280,
 			HouseCost: 150,
 			Rents:     []int{24, 120, 360, 850, 1025, 1200},
-			Icon:      "🍷",
+			Icon:      "winery",
 		},
 		{
 			Index: 30,
@@ -714,7 +714,7 @@ func NewChisinauBoard() []*Tile {
 				EN: "Anti-corruption officers just raided your office! Go directly to Prison No. 13.",
 				RU: "Маски-шоу нагрянули с обыском! Отправляйтесь прямо в Тюрьму № 13.",
 			},
-			Icon: "🚨",
+			Icon: "siren",
 		},
 		{
 			Index: 31,
@@ -738,7 +738,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     300,
 			HouseCost: 200,
 			Rents:     []int{26, 130, 390, 900, 1100, 1275},
-			Icon:      "🎹",
+			Icon:      "piano",
 		},
 		{
 			Index: 32,
@@ -762,7 +762,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     300,
 			HouseCost: 200,
 			Rents:     []int{26, 130, 390, 900, 1100, 1275},
-			Icon:      "🍾",
+			Icon:      "cellar",
 		},
 		{
 			Index: 33,
@@ -783,7 +783,7 @@ func NewChisinauBoard() []*Tile {
 				EN: "'Long live the godparents!' — see what surprise awaits you.",
 				RU: "«За здоровье нанашей!» — посмотрим, какой сюрприз вас ждёт.",
 			},
-			Icon: "🎁",
+			Icon: "chest",
 		},
 		{
 			Index: 34,
@@ -807,7 +807,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     320,
 			HouseCost: 200,
 			Rents:     []int{28, 150, 450, 1000, 1200, 1400},
-			Icon:      "🏆",
+			Icon:      "collection",
 		},
 		{
 			Index: 35,
@@ -830,7 +830,7 @@ func NewChisinauBoard() []*Tile {
 			},
 			Price: 200,
 			Rents: []int{25, 50, 100, 200},
-			Icon:  "✈️",
+			Icon:  "airport",
 		},
 		{
 			Index: 36,
@@ -851,7 +851,7 @@ func NewChisinauBoard() []*Tile {
 				EN: "The wheel of fortune spins right in the heart of the capital!",
 				RU: "Колесо фортуны крутится в самом центре столицы!",
 			},
-			Icon: "🍀",
+			Icon: "chance",
 		},
 		{
 			Index: 37,
@@ -875,7 +875,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     350,
 			HouseCost: 200,
 			Rents:     []int{35, 175, 500, 1100, 1300, 1500},
-			Icon:      "🎩",
+			Icon:      "mansion",
 		},
 		{
 			Index: 38,
@@ -897,7 +897,7 @@ func NewChisinauBoard() []*Tile {
 				RU: "Вас позвали нанашем на свадьбу на 300 гостей с живым оркестром! Заплатите 100 MDL.",
 			},
 			TaxAmount: 100,
-			Icon:      "🎻",
+			Icon:      "wedding",
 		},
 		{
 			Index: 39,
@@ -921,7 +921,7 @@ func NewChisinauBoard() []*Tile {
 			Price:     400,
 			HouseCost: 200,
 			Rents:     []int{50, 200, 600, 1400, 1700, 2000},
-			Icon:      "👑",
+			Icon:      "crown",
 		},
 	}
 }
