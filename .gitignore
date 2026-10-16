@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+client/node_modules/
+
+# Build outputs
+client/dist/
+server/bin/
+server/*.exe
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Environment & IDE
+.env
+.env.local
+.DS_Store
+.vscode/
+.idea/
+*.log
