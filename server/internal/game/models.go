@@ -150,10 +150,13 @@ type LogEntry struct {
 }
 
 type GameSettings struct {
+	MaxPlayers         int  `json:"maxPlayers"`
 	StartingCash       int  `json:"startingCash"`
 	FreeParkingJackpot bool `json:"freeParkingJackpot"`
 	DoubleOnGo         bool `json:"doubleOnGo"`
 	AuctionEnabled     bool `json:"auctionEnabled"`
+	AutoStart          bool `json:"autoStart"`
+	IsPrivate          bool `json:"isPrivate"`
 }
 
 type GameState struct {
