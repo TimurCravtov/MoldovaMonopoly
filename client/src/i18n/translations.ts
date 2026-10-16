@@ -291,4 +291,75 @@ export const UI_TEXT = {
     en: 'Room Code:',
     ru: 'Код комнаты:',
   },
+  roomBrowser: {
+    ro: 'Săli de Joc & Mese Deschise',
+    en: 'Game Rooms & Open Tables',
+    ru: 'Игровые комнаты и открытые столы',
+  },
+  createNewRoom: {
+    ro: 'Creează Masă Nouă',
+    en: 'Create New Table',
+    ru: 'Создать новый стол',
+  },
+  roomNameLabel: {
+    ro: 'Denumirea Mesei',
+    en: 'Table Name',
+    ru: 'Название стола',
+  },
+  maxPlayersLabel: {
+    ro: 'Locuri la Masă',
+    en: 'Table Seats',
+    ru: 'Мест за столом',
+  },
+  autoStartLabel: {
+    ro: 'Start automat când masa se umple',
+    en: 'Auto-start when all seats fill up',
+    ru: 'Автостарт при заполнении стола',
+  },
+  privateRoomLabel: {
+    ro: 'Masă Privată (doar prin link/cod)',
+    en: 'Private Table (invite link/code only)',
+    ru: 'Приватный стол (только по ссылке/коду)',
+  },
+  createAndJoin: {
+    ro: 'Deschide Masa & Intră',
+    en: 'Create & Join Table',
+    ru: 'Создать и сесть за стол',
+  },
+  joinRoomBtn: {
+    ro: 'Ocupă Loc',
+    en: 'Join Table',
+    ru: 'Сесть за стол',
+  },
+  currentRoomBadge: {
+    ro: 'Masa Ta Actuală',
+    en: 'Current Table',
+    ru: 'Ваш стол',
+  },
+  roomFullBadge: {
+    ro: 'Complet',
+    en: 'Full',
+    ru: 'Мест нет',
+  },
+  inProgressBadge: {
+    ro: 'În Joc',
+    en: 'In Match',
+    ru: 'Идёт игра',
+  },
+  openLobbyBadge: {
+    ro: 'Așteaptă Jucători',
+    en: 'Waiting for Players',
+    ru: 'Ожидание игроков',
+  },
+  joinByCodePlaceholder: {
+    ro: 'Sau introdu un cod de cameră...',
+    en: 'Or enter a room code...',
+    ru: 'Или введите код комнаты...',
+  },
+  refreshRooms: {
+    ro: 'Actualizează',
+    en: 'Refresh',
+    ru: 'Обновить',
+  },
 };
+
