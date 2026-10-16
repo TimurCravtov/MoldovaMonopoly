@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sort"
 	"sync"
 	"time"
 
@@ -56,21 +57,23 @@ func (c *ClientConn) SendJSON(v interface{}) error {
 }
 
 type Room struct {
-	ID      string
-	Name    string
-	Engine  *game.Engine
-	clients map[*ClientConn]bool
-	mu      sync.RWMutex
-	stopCh  chan struct{}
+	ID        string
+	Name      string
+	Engine    *game.Engine
+	clients   map[*ClientConn]bool
+	mu        sync.RWMutex
+	stopCh    chan struct{}
+	CreatedAt time.Time
 }
 
 func NewRoom(id, name string) *Room {
 	r := &Room{
-		ID:      id,
-		Name:    name,
-		Engine:  game.NewEngine(id, name),
-		clients: make(map[*ClientConn]bool),
-		stopCh:  make(chan struct{}),
+		ID:        id,
+		Name:      name,
+		Engine:    game.NewEngine(id, name),
+		clients:   make(map[*ClientConn]bool),
+		stopCh:    make(chan struct{}),
+		CreatedAt: time.Now(),
 	}
 	go r.botLoop()
 	return r
@@ -129,18 +132,111 @@ func NewHub() *Hub {
 	h := &Hub{
 		rooms: make(map[string]*Room),
 	}
-	// Pre-create a default Chișinău room
-	defaultRoom := NewRoom("chisinau-central", "Chișinău — Piața Marii Adunări Naționale")
-	h.rooms[defaultRoom.ID] = defaultRoom
+	presets := []struct {
+		id       string
+		name     string
+		settings game.GameSettings
+	}{
+		{
+			id:   "chisinau-central",
+			name: "Chișinău — Piața Marii Adunări Naționale",
+			settings: game.GameSettings{
+				MaxPlayers:         4,
+				StartingCash:       1500,
+				FreeParkingJackpot: true,
+				DoubleOnGo:         false,
+				AuctionEnabled:     true,
+				AutoStart:          false,
+			},
+		},
+		{
+			id:   "botanica-duel",
+			name: "Duel 1v1 — Poarta Orașului (Botanica)",
+			settings: game.GameSettings{
+				MaxPlayers:         2,
+				StartingCash:       1500,
+				FreeParkingJackpot: false,
+				DoubleOnGo:         false,
+				AuctionEnabled:     true,
+				AutoStart:          true,
+			},
+		},
+		{
+			id:   "cricova-vip",
+			name: "Cricova VIP — Galeriile Subterane",
+			settings: game.GameSettings{
+				MaxPlayers:         4,
+				StartingCash:       2500,
+				FreeParkingJackpot: true,
+				DoubleOnGo:         true,
+				AuctionEnabled:     true,
+				AutoStart:          false,
+			},
+		},
+		{
+			id:   "buiucani-rapid",
+			name: "Buiucani Express — Masă de 3 Jucători",
+			settings: game.GameSettings{
+				MaxPlayers:         3,
+				StartingCash:       1500,
+				FreeParkingJackpot: true,
+				DoubleOnGo:         false,
+				AuctionEnabled:     true,
+				AutoStart:          true,
+			},
+		},
+		{
+			id:   "ciocana-cumatrie",
+			name: "Cumătrie Mare — Masa de 6 (Ciocana)",
+			settings: game.GameSettings{
+				MaxPlayers:         6,
+				StartingCash:       2000,
+				FreeParkingJackpot: true,
+				DoubleOnGo:         true,
+				AuctionEnabled:     true,
+				AutoStart:          false,
+			},
+		},
+		{
+			id:   "purcari-grand",
+			name: "Castel Mimi & Purcari — Sala de 8 Jucători",
+			settings: game.GameSettings{
+				MaxPlayers:         8,
+				StartingCash:       1500,
+				FreeParkingJackpot: true,
+				DoubleOnGo:         false,
+				AuctionEnabled:     true,
+				AutoStart:          false,
+			},
+		},
+	}
+
+	for i, p := range presets {
+		r := NewRoom(p.id, p.name)
+		r.CreatedAt = time.Now().Add(time.Duration(i) * time.Millisecond)
+		r.Engine.State.Settings = p.settings
+		h.rooms[r.ID] = r
+	}
 	return h
 }
 
+type RoomPlayerPreview struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Token string `json:"token"`
+	Color string `json:"color"`
+	IsBot bool   `json:"isBot"`
+}
+
 type RoomSummary struct {
-	ID          string         `json:"id"`
-	Name        string         `json:"name"`
-	Phase       game.TurnPhase `json:"phase"`
-	PlayerCount int            `json:"playerCount"`
-	MaxPlayers  int            `json:"maxPlayers"`
+	ID          string              `json:"id"`
+	Name        string              `json:"name"`
+	Phase       game.TurnPhase      `json:"phase"`
+	PlayerCount int                 `json:"playerCount"`
+	MaxPlayers  int                 `json:"maxPlayers"`
+	Players     []RoomPlayerPreview `json:"players"`
+	Settings    game.GameSettings   `json:"settings"`
+	CreatedAt   int64               `json:"createdAt"`
 }
 
 func (h *Hub) ListRooms() []RoomSummary {
@@ -149,15 +245,43 @@ func (h *Hub) ListRooms() []RoomSummary {
 	list := make([]RoomSummary, 0, len(h.rooms))
 	for _, r := range h.rooms {
 		r.Engine.Lock()
+		if r.Engine.State.Settings.IsPrivate {
+			r.Engine.Unlock()
+			continue
+		}
+		maxP := r.Engine.State.Settings.MaxPlayers
+		if maxP < 2 || maxP > 8 {
+			maxP = 4
+		}
+		players := make([]RoomPlayerPreview, 0, len(r.Engine.State.Players))
+		for _, p := range r.Engine.State.Players {
+			players = append(players, RoomPlayerPreview{
+				ID:    p.ID,
+				Name:  p.Name,
+				Token: p.Token,
+				Color: p.Color,
+				IsBot: p.IsBot,
+			})
+		}
 		list = append(list, RoomSummary{
 			ID:          r.ID,
 			Name:        r.Name,
 			Phase:       r.Engine.State.Phase,
 			PlayerCount: len(r.Engine.State.Players),
-			MaxPlayers:  8,
+			MaxPlayers:  maxP,
+			Players:     players,
+			Settings:    r.Engine.State.Settings,
+			CreatedAt:   r.CreatedAt.UnixMilli(),
 		})
 		r.Engine.Unlock()
 	}
+	sort.Slice(list, func(i, j int) bool {
+		// Prioritize rooms in LOBBY with players waiting, then by CreatedAt
+		if (list[i].Phase == game.PhaseLobby) != (list[j].Phase == game.PhaseLobby) {
+			return list[i].Phase == game.PhaseLobby
+		}
+		return list[i].CreatedAt < list[j].CreatedAt
+	})
 	return list
 }
 
@@ -168,9 +292,26 @@ func (h *Hub) GetOrCreateRoom(id, name string) *Room {
 		return r
 	}
 	if name == "" {
-		name = "Camera " + id
+		name = "Masa " + id
 	}
 	r := NewRoom(id, name)
+	h.rooms[id] = r
+	return r
+}
+
+func (h *Hub) CreateRoom(id, name string, settings *game.GameSettings) *Room {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	if r, ok := h.rooms[id]; ok {
+		return r
+	}
+	if name == "" {
+		name = "Masa " + id
+	}
+	r := NewRoom(id, name)
+	if settings != nil {
+		_ = r.Engine.UpdateSettings(*settings)
+	}
 	h.rooms[id] = r
 	return r
 }
