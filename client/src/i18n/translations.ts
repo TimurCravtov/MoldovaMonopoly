@@ -276,4 +276,19 @@ export const UI_TEXT = {
     en: 'Show Panel',
     ru: 'Показать панель',
   },
+  copyInvite: {
+    ro: 'Copiază Link Invitație',
+    en: 'Copy Invite Link',
+    ru: 'Скопировать ссылку',
+  },
+  copiedInvite: {
+    ro: 'Link Copiat!',
+    en: 'Link Copied!',
+    ru: 'Ссылка скопирована!',
+  },
+  roomCode: {
+    ro: 'Cod Cameră:',
+    en: 'Room Code:',
+    ru: 'Код комнаты:',
+  },
 };
