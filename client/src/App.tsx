@@ -1,16 +1,34 @@
 import React, { useEffect, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
 import {
+  Users,
+  Handshake,
+  ScrollText,
+  RotateCcw,
+  MapPin,
+  Lock,
+  KeyRound,
+  AlertCircle,
+  Check,
+  X,
+  Loader2,
+} from 'lucide-react';
+import {
   GameState,
   GROUP_COLORS,
   Language,
-  getTokenEmoji,
 } from './types/game';
 import { t, UI_TEXT } from './i18n/translations';
 import { MonopolyBoard } from './components/MonopolyBoard';
 import { PropertyDeedCard } from './components/PropertyDeedCard';
 import { LobbyView } from './components/LobbyView';
 import { TradeModal } from './components/TradeModal';
+import {
+  TokenSvg,
+  TileIcon,
+  HouseSvg,
+  HotelSvg,
+} from './components/icons/MoldovaIcons';
 
 function getOrCreatePlayerId(): string {
   const key = 'chisinau_monopoly_player_id';
@@ -23,7 +41,7 @@ function getOrCreatePlayerId(): string {
 }
 
 function getSavedPlayerName(): string {
-  return localStorage.getItem('chisinau_monopoly_player_name') || 'Cumătrul';
+  return localStorage.getItem('chisinau_monopoly_player_name') || 'Orășean';
 }
 
 export function App() {
@@ -32,7 +50,7 @@ export function App() {
   const [myPlayerId] = useState<string>(getOrCreatePlayerId);
   const [state, setState] = useState<GameState | null>(null);
   const [errorToast, setErrorToast] = useState<string | null>(null);
-  const [selectedTileIdx, setSelectedTileIdx] = useState<number | null>(39); // Default to Bd. Ștefan cel Mare
+  const [selectedTileIdx, setSelectedTileIdx] = useState<number | null>(39);
   const [showTradeModal, setShowTradeModal] = useState<boolean>(false);
   const [connected, setConnected] = useState<boolean>(false);
 
@@ -110,47 +128,58 @@ export function App() {
   const selectedTile =
     state && selectedTileIdx !== null ? state.tiles[selectedTileIdx] : null;
 
+  const isGameActive = state && state.phase !== 'LOBBY';
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      {/* Top Navbar */}
-      <header className="bg-slate-900/95 border-b border-slate-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-30 backdrop-blur-md">
-        <div className="flex items-center gap-2.5">
-          <span className="text-xl">🇲🇩</span>
-          <div>
-            <span className="font-black text-sm sm:text-base tracking-wide text-amber-400">
+    <div
+      className={`${
+        isGameActive ? 'h-screen overflow-hidden' : 'min-h-screen'
+      } bg-[#16110E] text-[#F5EFE6] flex flex-col`}
+    >
+      {/* Compact Editorial Top Bar (52px) */}
+      <header className="h-[52px] shrink-0 bg-[#1E1612] border-b border-[#3A2C24] px-4 flex items-center justify-between gap-3 z-30">
+        <div className="flex items-center gap-3">
+          {/* Moldovan Tricolor Vertical Ribbon */}
+          <div className="flex h-5 w-3 rounded-xs overflow-hidden border border-white/20 shrink-0">
+            <span className="flex-1 bg-[#0046AE]" />
+            <span className="flex-1 bg-[#FFD200]" />
+            <span className="flex-1 bg-[#CC092F]" />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="font-editorial font-bold text-sm sm:text-base tracking-wider text-[#E5C158] uppercase">
               {t(UI_TEXT.title, lang)}
             </span>
             <span
-              className={`ml-2 inline-block w-2 h-2 rounded-full ${
-                connected ? 'bg-emerald-400' : 'bg-red-500'
+              className={`inline-block w-2 h-2 rounded-full ${
+                connected ? 'bg-[#4ADE80]' : 'bg-[#EF4444]'
               }`}
-              title={connected ? 'Conectat la Server' : 'Deconectat'}
+              title={connected ? 'Online' : 'Offline'}
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Room Quick Switcher */}
+        <div className="flex items-center gap-2.5">
+          {/* Room Selector */}
           <select
             value={roomId}
             onChange={(e) => setRoomId(e.target.value)}
-            className="bg-slate-800 border border-slate-700 text-xs rounded-xl px-2.5 py-1.5 text-slate-200 font-medium"
+            className="bg-[#140E0C] border border-[#3E2E25] text-xs rounded-lg px-2.5 py-1.5 text-[#D6C7B2] font-medium focus:outline-none focus:border-[#C59B27]"
           >
-            <option value="chisinau-central">🏛️ Sala PMAN (Central)</option>
-            <option value="botanica-gates">🏙️ Sala Porțile Orașului</option>
-            <option value="cricova-vip">🍷 Sala Beciurile Cricova</option>
+            <option value="chisinau-central">Sala PMAN (Central)</option>
+            <option value="botanica-gates">Sala Porțile Orașului</option>
+            <option value="cricova-vip">Sala Beciurile Cricova</option>
           </select>
 
           {/* Language Switcher: RO / EN / RU */}
-          <div className="flex bg-slate-800 p-0.5 rounded-xl border border-slate-700">
+          <div className="flex bg-[#140E0C] p-0.5 rounded-lg border border-[#3E2E25]">
             {(['ro', 'en', 'ru'] as Language[]).map((l) => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase transition ${
+                className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase transition ${
                   lang === l
-                    ? 'bg-amber-500 text-slate-950 shadow'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-[#C59B27] text-[#16110E] shadow'
+                    : 'text-[#9E8E7E] hover:text-white'
                 }`}
               >
                 {l}
@@ -158,36 +187,40 @@ export function App() {
             ))}
           </div>
 
-          {state && state.phase !== 'LOBBY' && (
+          {isGameActive && (
             <button
               onClick={() => sendAction('RESET_GAME')}
-              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-amber-300"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2A1E19] hover:bg-[#3A2C24] border border-[#4A382E] text-xs font-semibold text-[#E5C158]"
             >
-              {t(UI_TEXT.resetRoom, lang)}
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">
+                {t(UI_TEXT.resetRoom, lang)}
+              </span>
             </button>
           )}
         </div>
       </header>
 
-      {/* Error Toast */}
+      {/* Error Notification */}
       {errorToast && (
-        <div className="fixed bottom-5 right-5 z-50 bg-red-600 text-white px-4 py-2.5 rounded-xl shadow-2xl border border-red-400 font-bold text-xs sm:text-sm animate-bounce">
-          ⚠️ {errorToast}
+        <div className="fixed bottom-4 right-4 z-50 bg-[#7C1D26] text-[#FAF6EE] px-4 py-2.5 rounded-xl shadow-2xl border border-[#F87171]/40 font-semibold text-xs sm:text-sm flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-[#FCA5A5] shrink-0" />
+          <span>{errorToast}</span>
         </div>
       )}
 
       {/* Main Content */}
       {!state ? (
         <div className="flex-1 flex items-center justify-center p-8 text-center">
-          <div className="space-y-2">
-            <div className="text-4xl animate-spin">🚎</div>
-            <p className="text-sm text-slate-400">
-              Se conectează la serverul din Chișinău (Troleibuzul 22)...
+          <div className="space-y-3 flex flex-col items-center">
+            <Loader2 className="w-8 h-8 text-[#E5C158] animate-spin" />
+            <p className="text-sm text-[#B8A99A]">
+              Se conectează la serverul din Chișinău...
             </p>
           </div>
         </div>
       ) : state.phase === 'LOBBY' ? (
-        <main className="flex-1 py-4">
+        <main className="flex-1 py-4 overflow-y-auto">
           <LobbyView
             state={state}
             myPlayerId={myPlayerId}
@@ -196,9 +229,9 @@ export function App() {
           />
         </main>
       ) : (
-        <main className="flex-1 max-w-[1600px] w-full mx-auto p-3 sm:p-4 grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
-          {/* Left Column (8 cols on XL): The 40-Tile Board */}
-          <div className="xl:col-span-8 flex items-center justify-center">
+        <main className="flex-1 min-h-0 w-full flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-3 p-2 sm:p-3 overflow-y-auto lg:overflow-hidden">
+          {/* Left Stage: Full-Viewport Square 40-Tile Board */}
+          <div className="flex-1 flex items-center justify-center min-h-0">
             <MonopolyBoard
               state={state}
               myPlayerId={myPlayerId}
@@ -210,8 +243,8 @@ export function App() {
             />
           </div>
 
-          {/* Right Column (4 cols on XL): Players, Deed Inspector, Trades & Game Log */}
-          <div className="xl:col-span-4 space-y-4">
+          {/* Right Sidebar: Independently Scrollable Inspector, Players & Chronicle */}
+          <aside className="w-full lg:w-[375px] xl:w-[400px] shrink-0 flex flex-col gap-3 lg:h-full lg:overflow-y-auto pr-0.5">
             {/* Incoming Pending Trades Alert */}
             {pendingTradesForMe.map((tr) => {
               const fromPlayer = state.players.find(
@@ -220,12 +253,13 @@ export function App() {
               return (
                 <div
                   key={tr.id}
-                  className="bg-indigo-950/90 border-2 border-indigo-400 rounded-2xl p-3.5 space-y-2 shadow-xl"
+                  className="bg-[#261C17] border-2 border-[#C59B27] rounded-xl p-3 space-y-2 shadow-xl shrink-0"
                 >
-                  <div className="text-xs font-black uppercase text-indigo-300">
-                    🤝 Ofertă de Schimb de la {fromPlayer?.name}
+                  <div className="flex items-center gap-1.5 text-xs font-bold uppercase text-[#E5C158]">
+                    <Handshake className="w-4 h-4" />
+                    <span>Ofertă de la {fromPlayer?.name}</span>
                   </div>
-                  <div className="text-xs space-y-1 text-slate-200">
+                  <div className="text-xs space-y-1 text-[#EDE3D2]">
                     <div>
                       <strong>Primești:</strong> {tr.offerCash} MDL{' '}
                       {tr.offerProperties
@@ -233,7 +267,7 @@ export function App() {
                         .join(', ')}
                     </div>
                     <div>
-                      <strong>Dai în schimb:</strong> {tr.requestCash} MDL{' '}
+                      <strong>Cedezi:</strong> {tr.requestCash} MDL{' '}
                       {tr.requestProperties
                         .map((i) => t(state.tiles[i].name, lang))
                         .join(', ')}
@@ -247,9 +281,10 @@ export function App() {
                           accept: true,
                         })
                       }
-                      className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#1E6B45] hover:bg-[#165234] text-white font-bold text-xs"
                     >
-                      Acceptă 🤝
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Acceptă</span>
                     </button>
                     <button
                       onClick={() =>
@@ -258,30 +293,49 @@ export function App() {
                           accept: false,
                         })
                       }
-                      className="px-3 py-1.5 rounded-lg bg-rose-700 hover:bg-rose-600 text-white font-bold text-xs"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#7C1D26] hover:bg-[#9F1239] text-white font-bold text-xs"
                     >
-                      Refuză ✕
+                      <X className="w-3.5 h-3.5" />
+                      <span>Refuză</span>
                     </button>
                   </div>
                 </div>
               );
             })}
 
+            {/* Selected Tile Cadastral Deed Card */}
+            {selectedTile && (
+              <div className="shrink-0">
+                <PropertyDeedCard
+                  tile={selectedTile}
+                  state={state}
+                  myPlayerId={myPlayerId}
+                  lang={lang}
+                  onSendAction={sendAction}
+                  onClose={() => setSelectedTileIdx(null)}
+                />
+              </div>
+            )}
+
             {/* Players Standings & Portfolio */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3 shadow-xl">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                <h3 className="text-sm font-black uppercase tracking-wider text-amber-400">
-                  👥 {t(UI_TEXT.playersInRoom, lang)}
-                </h3>
+            <div className="bg-[#1E1612] border border-[#3A2C24] rounded-xl p-3 space-y-2.5 shadow-xl shrink-0">
+              <div className="flex items-center justify-between border-b border-[#34261E] pb-2">
+                <div className="flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-[#E5C158]" />
+                  <h3 className="font-editorial text-xs font-bold uppercase tracking-wider text-[#E5C158]">
+                    {t(UI_TEXT.playersInRoom, lang)}
+                  </h3>
+                </div>
                 <button
                   onClick={() => setShowTradeModal(true)}
-                  className="text-xs px-2.5 py-1 rounded-lg bg-indigo-600/80 hover:bg-indigo-600 text-white font-semibold"
+                  className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg bg-[#2C201B] hover:bg-[#3A2C24] border border-[#5C493E] text-[#E5C158] font-semibold"
                 >
-                  {t(UI_TEXT.proposeTrade, lang)}
+                  <Handshake className="w-3 h-3" />
+                  <span>{t(UI_TEXT.proposeTrade, lang)}</span>
                 </button>
               </div>
 
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {state.players.map((p, idx) => {
                   const ownedTiles = state.tiles.filter(
                     (tile) => tile.ownerId === p.id
@@ -290,48 +344,53 @@ export function App() {
                   return (
                     <div
                       key={p.id}
-                      className={`p-3 rounded-xl border transition ${
+                      className={`p-2.5 rounded-lg border transition ${
                         p.bankrupt
-                          ? 'opacity-45 bg-slate-900 border-slate-800'
+                          ? 'opacity-40 bg-[#16100D] border-[#2A1E19]'
                           : isTurn
-                          ? 'bg-slate-800/95 border-amber-500 shadow-md'
-                          : 'bg-slate-800/60 border-slate-700/70'
+                          ? 'bg-[#281E18] border-[#C59B27] shadow-md'
+                          : 'bg-[#16100D]/90 border-[#34261E]'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-2.5 min-w-0">
                           <div
                             style={{ backgroundColor: p.color }}
-                            className="w-7 h-7 rounded-full flex items-center justify-center text-sm shadow border border-white/40"
+                            className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow border border-white/40 shrink-0"
                           >
-                            {getTokenEmoji(p.token)}
+                            <TokenSvg tokenId={p.token} className="w-4 h-4" />
                           </div>
-                          <div>
-                            <div className="font-bold text-xs sm:text-sm flex items-center gap-1.5">
-                              <span>{p.name}</span>
+                          <div className="min-w-0">
+                            <div className="font-bold text-xs flex items-center gap-1.5 truncate">
+                              <span className="truncate">{p.name}</span>
                               {p.id === myPlayerId && (
-                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300">
+                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#C59B27]/20 text-[#E5C158] border border-[#C59B27]/40">
                                   TU
                                 </span>
                               )}
                               {p.inJail && (
-                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-800 text-rose-200">
-                                  🔒 {t(UI_TEXT.inJailBadge, lang)}
+                                <span className="inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.2 rounded bg-[#7C1D26] text-white">
+                                  <Lock className="w-2.5 h-2.5" />
+                                  <span>{t(UI_TEXT.inJailBadge, lang)}</span>
                                 </span>
                               )}
                             </div>
-                            <div className="text-[11px] text-slate-400">
-                              📍 {t(state.tiles[p.position]?.name, lang)}
+                            <div className="text-[10px] text-[#9E8E7E] flex items-center gap-1 truncate">
+                              <MapPin className="w-2.5 h-2.5 text-[#C59B27] shrink-0" />
+                              <span className="truncate">
+                                {t(state.tiles[p.position]?.name, lang)}
+                              </span>
                             </div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="font-black text-sm text-emerald-400">
+                        <div className="text-right shrink-0 ml-2">
+                          <div className="font-mono-num font-bold text-xs sm:text-sm text-[#4ADE80]">
                             {p.cash} MDL
                           </div>
                           {p.getOutOfJailFree > 0 && (
-                            <div className="text-[10px] text-amber-300">
-                              📜 ×{p.getOutOfJailFree} Cumătru
+                            <div className="inline-flex items-center gap-1 text-[10px] text-[#E5C158]">
+                              <KeyRound className="w-2.5 h-2.5" />
+                              <span>×{p.getOutOfJailFree}</span>
                             </div>
                           )}
                         </div>
@@ -339,7 +398,7 @@ export function App() {
 
                       {/* Owned Property Chips */}
                       {ownedTiles.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1 pt-2 border-t border-slate-700/60">
+                        <div className="mt-2 flex flex-wrap gap-1 pt-1.5 border-t border-[#34261E]">
                           {ownedTiles.map((tile) => {
                             const grp =
                               GROUP_COLORS[tile.group] || GROUP_COLORS.NONE;
@@ -347,20 +406,28 @@ export function App() {
                               <button
                                 key={tile.index}
                                 onClick={() => setSelectedTileIdx(tile.index)}
-                                className={`text-[10px] px-1.5 py-0.5 rounded font-semibold flex items-center gap-1 border ${grp.bg} ${grp.text} ${
-                                  tile.mortgaged ? 'opacity-50 line-through' : ''
+                                className={`text-[9.5px] px-1.5 py-0.5 rounded font-semibold flex items-center gap-1 border ${grp.bg} ${grp.text} ${
+                                  tile.mortgaged ? 'opacity-45 line-through' : ''
                                 }`}
                                 title={t(tile.name, lang)}
                               >
-                                <span>{tile.icon}</span>
-                                <span className="max-w-[90px] truncate">
+                                <TileIcon
+                                  iconKey={tile.icon}
+                                  className="w-2.5 h-2.5 shrink-0"
+                                />
+                                <span className="max-w-[82px] truncate">
                                   {t(tile.name, lang)}
                                 </span>
                                 {tile.houses > 0 && (
-                                  <span>
-                                    {tile.houses === 5
-                                      ? '🏰'
-                                      : `×${tile.houses}🏠`}
+                                  <span className="inline-flex items-center">
+                                    {tile.houses === 5 ? (
+                                      <HotelSvg className="w-2.5 h-2.5" />
+                                    ) : (
+                                      <>
+                                        ×{tile.houses}
+                                        <HouseSvg className="w-2.5 h-2.5" />
+                                      </>
+                                    )}
                                   </span>
                                 )}
                               </button>
@@ -374,35 +441,26 @@ export function App() {
               </div>
             </div>
 
-            {/* Selected Tile Cadastral Deed Card */}
-            {selectedTile && (
-              <PropertyDeedCard
-                tile={selectedTile}
-                state={state}
-                myPlayerId={myPlayerId}
-                lang={lang}
-                onSendAction={sendAction}
-                onClose={() => setSelectedTileIdx(null)}
-              />
-            )}
-
-            {/* Chișinău Chronicle (Game Log) */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
-              <h3 className="text-xs font-black uppercase tracking-wider text-amber-400 mb-2 border-b border-slate-800 pb-1.5">
-                📜 {t(UI_TEXT.gameLog, lang)}
-              </h3>
-              <div className="space-y-1.5 max-h-56 overflow-y-auto text-xs pr-1">
+            {/* Match Chronicle (Game Log) */}
+            <div className="bg-[#1E1612] border border-[#3A2C24] rounded-xl p-3 shadow-xl shrink-0">
+              <div className="flex items-center gap-1.5 border-b border-[#34261E] pb-1.5 mb-2">
+                <ScrollText className="w-3.5 h-3.5 text-[#E5C158]" />
+                <h3 className="font-editorial text-xs font-bold uppercase tracking-wider text-[#E5C158]">
+                  {t(UI_TEXT.gameLog, lang)}
+                </h3>
+              </div>
+              <div className="space-y-1.5 max-h-44 overflow-y-auto text-[11px] pr-1">
                 {[...state.logs].reverse().map((entry) => (
                   <div
                     key={entry.id}
-                    className="text-slate-300 bg-slate-800/50 px-2.5 py-1.5 rounded-lg border border-slate-800"
+                    className="text-[#D6C7B2] bg-[#16100D] px-2.5 py-1.5 rounded border border-[#2C201B] leading-snug"
                   >
                     {t(entry.text, lang)}
                   </div>
                 ))}
               </div>
             </div>
-          </div>
+          </aside>
         </main>
       )}
 
