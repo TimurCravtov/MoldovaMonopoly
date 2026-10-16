@@ -306,14 +306,7 @@ func (h *Hub) readPump(c *ClientConn) {
 		case "RESPOND_TRADE":
 			actionErr = room.Engine.RespondTrade(msg.TradeID, c.PlayerID, msg.Accept)
 		case "RESET_GAME":
-			// Reset current room back to lobby with existing human players
-			oldPlayers := room.Engine.State.Players
-			room.Engine = game.NewEngine(room.ID, room.Name)
-			for _, p := range oldPlayers {
-				if !p.IsBot && p.Connected {
-					_, _ = room.Engine.AddPlayer(p.ID, p.Name, p.Token, p.Color, false)
-				}
-			}
+			room.Engine.Reset()
 		}
 		room.Engine.Unlock()
 
