@@ -1,20 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Gavel,
-  Check,
-  ArrowRight,
-  Handshake,
-  KeyRound,
-  AlertTriangle,
-  Trophy,
-  RotateCcw,
-  Coins,
-  Building,
-} from 'lucide-react';
-import {
   GameState,
   Language,
   Player,
+  Tile,
   GROUP_COLORS,
 } from '../types/game';
 import { t, UI_TEXT } from '../i18n/translations';
@@ -72,11 +61,9 @@ export const MonopolyBoard: React.FC<MonopolyBoardProps> = ({
   const myPlayer = state.players.find((p) => p.id === myPlayerId);
   const currentTile = currentPlayer ? state.tiles[currentPlayer.position] : null;
 
-  // Track dice roll trigger count so Dice3D animates on every roll
   const [rollTrigger, setRollTrigger] = useState(0);
   const prevLogLenRef = useRef(state.logs.length);
 
-  // Step-by-step animated token positions map: playerId -> visible tile index
   const [visualPositions, setVisualPositions] = useState<Record<string, number>>(
     () => {
       const init: Record<string, number> = {};
@@ -97,7 +84,6 @@ export const MonopolyBoard: React.FC<MonopolyBoardProps> = ({
     }
   }, [state.logs.length, state.hasRolled]);
 
-  // Animate token stepping around the board when a player's position changes
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
 
@@ -105,7 +91,6 @@ export const MonopolyBoard: React.FC<MonopolyBoardProps> = ({
       const currentVisual =
         visualPositions[p.id] !== undefined ? visualPositions[p.id] : p.position;
       if (currentVisual !== p.position) {
-        // Compute forward steps on the 40-tile loop
         const forwardSteps = (p.position - currentVisual + 40) % 40;
         if (forwardSteps > 0 && forwardSteps <= 12) {
           setHoppingPlayerId(p.id);
@@ -120,7 +105,6 @@ export const MonopolyBoard: React.FC<MonopolyBoardProps> = ({
             timers.push(timer);
           }
         } else {
-          // Direct jump (e.g. sent to Jail or long card jump)
           setVisualPositions((prev) => ({ ...prev, [p.id]: p.position }));
         }
       }
@@ -134,8 +118,29 @@ export const MonopolyBoard: React.FC<MonopolyBoardProps> = ({
   const getPlayerById = (id: string): Player | undefined =>
     state.players.find((p) => p.id === id);
 
+  const renderBuildings = (tile: Tile, vertical: boolean) => {
+    if (tile.houses <= 0) return null;
+    if (tile.houses === 5) {
+      return <HotelSvg className="w-3 h-3 text-[#FFECEC] drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]" />;
+    }
+    return (
+      <div
+        className={`flex ${
+          vertical ? 'flex-col' : 'flex-row'
+        } items-center justify-center gap-0.5`}
+      >
+        {Array.from({ length: tile.houses }).map((_, idx) => (
+          <HouseSvg
+            key={idx}
+            className="w-2.5 h-2.5 text-[#D1FAE5] drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]"
+          />
+        ))}
+      </div>
+    );
+  };
+
   return (
-    <div className="board-viewport-square mx-auto bg-[#EDE6D6] text-[#1E1915] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.75)] border-[6px] border-[#3A241B] ring-2 ring-[#C59B27]/70 overflow-hidden monopoly-grid select-none relative">
+    <div className="board-viewport-square mx-auto bg-[#D8E5D7] text-[#141414] border-[3px] border-[#141414] shadow-[8px_8px_0_#141414] overflow-hidden monopoly-grid select-none relative">
       {/* 40 Perimeter Tiles */}
       {state.tiles.map((tile) => {
         const { row, col, side } = getGridCoords(tile.index);
@@ -149,96 +154,232 @@ export const MonopolyBoard: React.FC<MonopolyBoardProps> = ({
         });
         const owner = tile.ownerId ? getPlayerById(tile.ownerId) : undefined;
         const groupColor = GROUP_COLORS[tile.group] || GROUP_COLORS.NONE;
-        const isCorner = side === 'corner';
         const isSelected = selectedTileIdx === tile.index;
+        const hasColorBar = tile.type === 'PROPERTY';
+
+        // Special Corner Tile 0: START
+        if (tile.index === 0) {
+          return (
+            <div
+              key={0}
+              style={{ gridRow: row, gridColumn: col }}
+              onClick={() => onSelectTile(0)}
+              className={`relative border border-[#141414] bg-[#D8E5D7] p-1 flex flex-col justify-between items-center text-center cursor-pointer ${
+                isSelected ? 'bg-[#C4D8C3] ring-2 ring-inset ring-[#141414]' : 'hover:bg-[#CEE0CD]'
+              }`}
+            >
+              <span className="text-[7px] sm:text-[8px] font-bold uppercase tracking-tight leading-none mt-0.5">
+                ÎNCASEAZĂ 200 MDL
+              </span>
+              <span className="text-xs sm:text-base font-black tracking-tighter text-[#D92626] uppercase leading-none">
+                START
+              </span>
+              {/* Red Arrow pointing left */}
+              <div className="w-full flex items-center justify-center text-[#D92626] font-black text-xs leading-none mb-0.5">
+                ←──
+              </div>
+              {playersHere.length > 0 && (
+                <div className="absolute inset-x-0.5 bottom-1 flex flex-wrap items-center justify-center gap-0.5 z-10">
+                  {playersHere.map((p) => (
+                    <div
+                      key={p.id}
+                      style={{ backgroundColor: p.color }}
+                      className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-white border-[1.5px] border-[#141414] shadow-[1px_1px_0_#141414] ${
+                        hoppingPlayerId === p.id ? 'animate-token-hop' : ''
+                      }`}
+                    >
+                      <TokenSvg tokenId={p.token} className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        // Special Corner Tile 10: JAIL (Penitenciarul Nr. 13 + Just Visiting corridor)
+        if (tile.index === 10) {
+          return (
+            <div
+              key={10}
+              style={{ gridRow: row, gridColumn: col }}
+              onClick={() => onSelectTile(10)}
+              className={`relative border border-[#141414] bg-[#D8E5D7] cursor-pointer overflow-hidden ${
+                isSelected ? 'ring-2 ring-inset ring-[#141414]' : ''
+              }`}
+            >
+              {/* Inner Orange Prison Box in Top-Right */}
+              <div className="absolute top-0 right-0 w-[72%] h-[72%] bg-[#F58220] border-l-[1.5px] border-b-[1.5px] border-[#141414] flex flex-col items-center justify-center p-0.5 text-center">
+                <div className="w-full flex justify-evenly border-y border-[#141414] py-0.5 my-0.5 bg-white/40">
+                  <span className="w-[1.5px] h-2.5 bg-[#141414]" />
+                  <span className="w-[1.5px] h-2.5 bg-[#141414]" />
+                  <span className="w-[1.5px] h-2.5 bg-[#141414]" />
+                </div>
+                <span className="text-[7px] sm:text-[8px] font-black uppercase leading-none text-[#141414]">
+                  NR. 13
+                </span>
+              </div>
+              {/* Bottom corridor label */}
+              <div className="absolute bottom-0.5 inset-x-0 text-center text-[6.5px] sm:text-[7.5px] font-extrabold uppercase tracking-tighter">
+                VIZITĂ
+              </div>
+              {playersHere.length > 0 && (
+                <div className="absolute inset-x-0.5 bottom-1 flex flex-wrap items-center justify-center gap-0.5 z-10">
+                  {playersHere.map((p) => (
+                    <div
+                      key={p.id}
+                      style={{ backgroundColor: p.color }}
+                      className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-white border-[1.5px] border-[#141414] shadow-[1px_1px_0_#141414] ${
+                        hoppingPlayerId === p.id ? 'animate-token-hop' : ''
+                      }`}
+                    >
+                      <TokenSvg tokenId={p.token} className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        // Special Corners 20 (Free Parking) and 30 (Go to Jail)
+        if (tile.index === 20 || tile.index === 30) {
+          return (
+            <div
+              key={tile.index}
+              style={{ gridRow: row, gridColumn: col }}
+              onClick={() => onSelectTile(tile.index)}
+              className={`relative border border-[#141414] bg-[#D8E5D7] p-1 flex flex-col justify-between items-center text-center cursor-pointer ${
+                isSelected ? 'bg-[#C4D8C3] ring-2 ring-inset ring-[#141414]' : 'hover:bg-[#CEE0CD]'
+              }`}
+            >
+              <span className="text-[6.5px] sm:text-[7.5px] font-extrabold uppercase leading-tight tracking-tight">
+                {tile.index === 20 ? 'ARCUL DE TRIUMF' : 'REȚINUT DE CNA'}
+              </span>
+              <TileIcon
+                iconKey={tile.icon}
+                className={`w-5 h-5 sm:w-6 sm:h-6 ${
+                  tile.index === 30 ? 'text-[#D92626]' : 'text-[#141414]'
+                }`}
+              />
+              <span className="text-[6.5px] sm:text-[7.5px] font-black uppercase leading-none">
+                {tile.index === 20 ? 'PARCARE' : 'LA NR. 13'}
+              </span>
+              {playersHere.length > 0 && (
+                <div className="absolute inset-x-0.5 bottom-1 flex flex-wrap items-center justify-center gap-0.5 z-10">
+                  {playersHere.map((p) => (
+                    <div
+                      key={p.id}
+                      style={{ backgroundColor: p.color }}
+                      className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-white border-[1.5px] border-[#141414] shadow-[1px_1px_0_#141414] ${
+                        hoppingPlayerId === p.id ? 'animate-token-hop' : ''
+                      }`}
+                    >
+                      <TokenSvg tokenId={p.token} className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        // Standard Edge Tiles (Bottom, Top, Left, Right) with Inward-Facing Color Bands!
+        const isHorizontalSide = side === 'left' || side === 'right';
 
         return (
           <div
             key={tile.index}
             style={{ gridRow: row, gridColumn: col }}
             onClick={() => onSelectTile(tile.index)}
-            className={`relative flex flex-col justify-between border border-[#B8AC96] cursor-pointer transition-colors overflow-hidden ${
-              isCorner ? 'bg-[#E5DCC8]' : 'bg-[#F4EFE4]'
+            className={`relative border border-[#141414] bg-[#D8E5D7] cursor-pointer overflow-hidden flex ${
+              side === 'bottom'
+                ? 'flex-col'
+                : side === 'top'
+                ? 'flex-col-reverse'
+                : side === 'left'
+                ? 'flex-row-reverse'
+                : 'flex-row'
             } ${
               isSelected
-                ? 'ring-2 ring-inset ring-[#9F1239] bg-[#FAF5EA] z-20'
-                : 'hover:bg-[#FAF6ED]'
-            } ${tile.mortgaged ? 'opacity-60 bg-[#D5CBB8]' : ''}`}
+                ? 'bg-[#C2D6C0] ring-2 ring-inset ring-[#141414] z-20'
+                : 'hover:bg-[#CCE0CA]'
+            } ${tile.mortgaged ? 'opacity-55 bg-[#B8C4B7]' : ''}`}
           >
-            {/* Color Group Header Bar + Houses/Hotel */}
-            {tile.group !== 'NONE' && (
+            {/* Inward-Facing Color Band for Street Properties */}
+            {hasColorBar && (
               <div
-                className={`h-2.5 sm:h-3.5 w-full ${groupColor.bg} flex items-center justify-center gap-0.5 px-0.5 border-b border-black/25 shrink-0`}
+                className={`${groupColor.bg} shrink-0 flex items-center justify-center ${
+                  side === 'bottom'
+                    ? 'h-[22%] w-full border-b-[1.5px] border-[#141414]'
+                    : side === 'top'
+                    ? 'h-[22%] w-full border-t-[1.5px] border-[#141414]'
+                    : side === 'left'
+                    ? 'w-[22%] h-full border-l-[1.5px] border-[#141414]'
+                    : 'w-[22%] h-full border-r-[1.5px] border-[#141414]'
+                }`}
               >
-                {tile.houses > 0 &&
-                  tile.houses < 5 &&
-                  Array.from({ length: tile.houses }).map((_, idx) => (
-                    <HouseSvg
-                      key={idx}
-                      className="w-2.5 h-2.5 text-[#ECFDF5] drop-shadow"
-                    />
-                  ))}
-                {tile.houses === 5 && (
-                  <HotelSvg className="w-3 h-3 text-[#FEF08A] drop-shadow" />
-                )}
+                {renderBuildings(tile, isHorizontalSide)}
               </div>
             )}
 
-            {/* Tile Main Content */}
-            <div className="flex-1 flex flex-col items-center justify-center px-0.5 py-0.5 text-center min-h-0">
-              <div
-                className={`${
-                  isCorner ? 'text-[#7C1D26]' : 'text-[#4A3B31]'
-                } mb-0.5 shrink-0`}
-              >
-                <TileIcon
-                  iconKey={tile.icon}
-                  className={
-                    isCorner
-                      ? 'w-4 h-4 sm:w-5 sm:h-5'
-                      : 'w-3 h-3 sm:w-3.5 sm:h-3.5'
-                  }
-                />
-              </div>
-              <span className="text-[7px] sm:text-[8.5px] xl:text-[9px] font-bold leading-[1.08] line-clamp-2 text-[#1E1915] tracking-tight px-0.5">
+            {/* Tile Body */}
+            <div className="flex-1 flex flex-col items-center justify-between p-0.5 text-center min-w-0 min-h-0">
+              <span className="text-[6.5px] sm:text-[8px] xl:text-[8.5px] font-extrabold uppercase leading-[1.05] line-clamp-2 text-[#141414] tracking-tighter px-0.5">
                 {t(tile.name, lang)}
               </span>
+
+              {!hasColorBar && (
+                <TileIcon
+                  iconKey={tile.icon}
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#141414] my-auto shrink-0"
+                />
+              )}
+
               {tile.price > 0 && (
-                <span className="font-mono-num text-[6.5px] sm:text-[8px] font-bold text-[#4A3B31] mt-0.5">
-                  {tile.price}
+                <span className="font-mono-num text-[6px] sm:text-[7.5px] font-bold text-[#141414] leading-none">
+                  {tile.price} MDL
                 </span>
               )}
               {tile.taxAmount && tile.taxAmount > 0 && (
-                <span className="font-mono-num text-[6.5px] sm:text-[8px] font-bold text-[#9F1239] mt-0.5">
+                <span className="font-mono-num text-[6px] sm:text-[7.5px] font-bold text-[#D92626] leading-none">
                   -{tile.taxAmount}
                 </span>
               )}
             </div>
 
-            {/* Owner Color Bar at Bottom */}
+            {/* Owner Marker Dot/Tab on Outer Edge */}
             {owner && (
               <div
-                className="h-1.5 w-full shrink-0"
                 style={{ backgroundColor: owner.color }}
+                className={
+                  side === 'bottom'
+                    ? 'h-1.5 w-full border-t border-[#141414] shrink-0'
+                    : side === 'top'
+                    ? 'h-1.5 w-full border-b border-[#141414] shrink-0'
+                    : side === 'left'
+                    ? 'w-1.5 h-full border-r border-[#141414] shrink-0'
+                    : 'w-1.5 h-full border-l border-[#141414] shrink-0'
+                }
                 title={`${t(UI_TEXT.owner, lang)} ${owner.name}`}
               />
             )}
 
             {/* Mortgaged Stamp */}
             {tile.mortgaged && (
-              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 bg-[#7C1D26]/90 text-white text-[6.5px] font-bold uppercase text-center py-0.5 tracking-wider">
+              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 bg-[#D92626] text-white text-[6px] font-black uppercase text-center py-0.5 border-y border-[#141414]">
                 {t(UI_TEXT.mortgagedBadge, lang)}
               </div>
             )}
 
             {/* Player Tokens on this Tile */}
             {playersHere.length > 0 && (
-              <div className="absolute inset-x-0.5 bottom-1 flex flex-wrap items-center justify-center gap-0.5 pointer-events-none z-10">
+              <div className="absolute inset-0 flex flex-wrap items-center justify-center gap-0.5 pointer-events-none z-10 p-0.5">
                 {playersHere.map((p) => (
                   <div
                     key={p.id}
                     style={{ backgroundColor: p.color }}
-                    className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-white shadow-[0_2px_6px_rgba(0,0,0,0.65)] border border-[#FAF6EE] transition-transform ${
+                    className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-white border-[1.5px] border-[#141414] shadow-[1.5px_1.5px_0_#141414] ${
                       hoppingPlayerId === p.id ? 'animate-token-hop' : ''
                     }`}
                     title={`${p.name} (${p.cash} MDL)`}
@@ -252,108 +393,98 @@ export const MonopolyBoard: React.FC<MonopolyBoardProps> = ({
         );
       })}
 
-      {/* Center 9x9 Court */}
+      {/* Center 9x9 Court — Continuous Mint Board Surface (#D8E5D7) */}
       <div
         style={{ gridRow: '2 / 11', gridColumn: '2 / 11' }}
-        className="bg-[#1C1512] text-[#F5EFE6] p-2.5 sm:p-4 flex flex-col justify-between relative overflow-hidden border-2 border-[#8E6F2E]"
+        className="bg-[#D8E5D7] text-[#141414] p-3 sm:p-5 flex flex-col justify-between relative overflow-hidden border border-[#141414]"
       >
-        {/* Subtle AI-Generated Engraved Chișinău Emblem Watermark */}
-        <img
-          src="/assets/chisinau-emblem.jpg"
-          alt="Chișinău Emblem"
-          className="absolute inset-0 w-full h-full object-cover opacity-[0.11] pointer-events-none mix-blend-luminosity"
-        />
+        {/* Top-Left Diagonal Card Deck Slot: CUTIA CU CUMĂTRIE */}
+        <div className="hidden sm:flex absolute top-5 left-5 w-28 h-16 border-2 border-dashed border-[#141414]/60 -rotate-12 flex-col items-center justify-center p-1 text-center pointer-events-none">
+          <span className="text-[8px] font-black uppercase tracking-widest text-[#141414]/80">
+            CUTIA CU CUMĂTRIE
+          </span>
+          <span className="text-[7px] font-mono-num text-[#141414]/60">
+            16 CĂRȚI
+          </span>
+        </div>
 
-        {/* Decorative Inner Frame */}
-        <div className="relative z-10 flex flex-col items-center text-center border-b border-[#3A2C24] pb-2">
-          <div className="flex items-center gap-1.5 mb-1">
-            <span className="w-5 h-1.5 bg-[#0046AE]" />
-            <span className="w-5 h-1.5 bg-[#FFD200]" />
-            <span className="w-5 h-1.5 bg-[#CC092F]" />
+        {/* Bottom-Right Diagonal Card Deck Slot: NOROC / ȘANSĂ */}
+        <div className="hidden sm:flex absolute bottom-5 right-5 w-28 h-16 border-2 border-dashed border-[#141414]/60 -rotate-12 flex-col items-center justify-center p-1 text-center pointer-events-none">
+          <span className="text-[8px] font-black uppercase tracking-widest text-[#141414]/80">
+            NOROC / ȘANSĂ
+          </span>
+          <span className="text-[7px] font-mono-num text-[#141414]/60">
+            16 CĂRȚI
+          </span>
+        </div>
+
+        {/* Top Bar: Classic Red Stamped MONOPOLY Banner & Bank Supply */}
+        <div className="relative z-10 flex flex-col items-center text-center">
+          <div className="bg-[#E32626] text-white border-[2.5px] border-[#141414] shadow-[4px_4px_0_#141414] px-5 py-1.5">
+            <h2 className="text-base sm:text-2xl font-black tracking-[0.14em] uppercase leading-none">
+              MONOPOLY
+            </h2>
+            <div className="text-[8px] sm:text-[10px] font-bold tracking-[0.22em] uppercase mt-0.5 border-t border-white/40 pt-0.5">
+              CHIȘINĂU & MOLDOVA
+            </div>
           </div>
-          <h2 className="font-editorial text-sm sm:text-lg lg:text-xl font-bold tracking-wider text-[#E5C158] uppercase">
-            {t(UI_TEXT.title, lang)}
-          </h2>
-          <p className="text-[9px] sm:text-[11px] text-[#B8A99A] tracking-wide">
-            {t(UI_TEXT.subtitle, lang)}
-          </p>
 
-          {/* Municipal Treasury & BNM Reserve Strip */}
-          <div className="mt-1.5 flex flex-wrap items-center justify-center gap-3 text-[10px] sm:text-xs bg-[#261D18]/95 px-3.5 py-1 rounded-full border border-[#4A382E]">
-            <span className="flex items-center gap-1 text-[#D6C7B2]">
-              <Coins className="w-3.5 h-3.5 text-[#E5C158]" />
-              <span>{t(UI_TEXT.jackpotPot, lang)}</span>
-              <strong className="font-mono-num text-[#E5C158]">
-                {state.freeParkingPot} MDL
-              </strong>
+          {/* Bank Supply & Triumphal Arch Pot Ledger */}
+          <div className="mt-2.5 flex flex-wrap items-center justify-center gap-3 text-[10px] sm:text-xs bg-[#FAF8F5] px-3 py-1 border-[1.5px] border-[#141414] shadow-[2px_2px_0_#141414] font-mono-num">
+            <span>
+              {t(UI_TEXT.jackpotPot, lang)}{' '}
+              <strong>{state.freeParkingPot} MDL</strong>
             </span>
-            <span className="text-[#5C493E]">|</span>
-            <span className="flex items-center gap-1 text-[#D6C7B2]">
-              <HouseSvg className="w-3 h-3 text-[#4ADE80]" />
-              <span>{t(UI_TEXT.housesLeft, lang)}</span>
-              <strong className="font-mono-num text-white">
-                {state.housesRemaining}
-              </strong>
+            <span>|</span>
+            <span>
+              {t(UI_TEXT.housesLeft, lang)}{' '}
+              <strong className="text-[#1EA350]">{state.housesRemaining}</strong>
             </span>
-            <span className="flex items-center gap-1 text-[#D6C7B2]">
-              <HotelSvg className="w-3 h-3 text-[#E5C158]" />
-              <span>{t(UI_TEXT.hotelsLeft, lang)}</span>
-              <strong className="font-mono-num text-white">
-                {state.hotelsRemaining}
-              </strong>
+            <span>|</span>
+            <span>
+              {t(UI_TEXT.hotelsLeft, lang)}{' '}
+              <strong className="text-[#E32626]">{state.hotelsRemaining}</strong>
             </span>
           </div>
         </div>
 
-        {/* Center Interactive Stage */}
-        <div className="relative z-10 my-auto flex flex-col items-center justify-center py-1 gap-2.5">
-          {/* Circular Medallion Preview when no modal is blocking */}
-          {!state.lastDrawnCard && state.phase !== 'AUCTION' && (
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 border-[#C59B27]/70 shadow-xl hidden sm:block">
-              <img
-                src="/assets/chisinau-emblem.jpg"
-                alt="Chișinău Medallion"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-
-          {/* Drawn Chance / Cumătrie Card */}
+        {/* Center Interactive Tabletop Stage */}
+        <div className="relative z-10 my-auto flex flex-col items-center justify-center py-2 gap-3">
+          {/* Drawn Chance / Cumătrie Card (Printed Cardstock Style) */}
           {state.lastDrawnCard && (
             <div
-              className={`animate-card-reveal w-full max-w-md rounded-xl p-3 border shadow-2xl ${
+              className={`w-full max-w-sm p-3.5 border-2 border-[#141414] shadow-[4px_4px_0_#141414] ${
                 state.lastDrawnCard.deck === 'CHANCE'
-                  ? 'bg-[#2C1F14]/95 border-[#C59B27] text-[#FAF3E8]'
-                  : 'bg-[#2E161B]/95 border-[#B84A69] text-[#FAF3E8]'
+                  ? 'bg-[#FDE021] text-[#141414]'
+                  : 'bg-[#FAF8F5] text-[#141414]'
               }`}
             >
-              <div className="flex items-center justify-between text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#E5C158] border-b border-white/10 pb-1 mb-1.5">
+              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest border-b-[1.5px] border-[#141414] pb-1 mb-1.5">
                 <span>
                   {state.lastDrawnCard.deck === 'CHANCE'
-                    ? 'NOROC / ȘANSĂ'
-                    : 'CUTIA CU CUMĂTRIE'}
+                    ? 'CARTE NOROC / ȘANSĂ'
+                    : 'CARTE CUMĂTRIE'}
                 </span>
                 <span>{t(state.lastDrawnCard.title, lang)}</span>
               </div>
-              <p className="text-xs sm:text-sm leading-snug text-[#EDE3D2]">
+              <p className="text-xs sm:text-sm font-medium leading-snug">
                 {t(state.lastDrawnCard.description, lang)}
               </p>
             </div>
           )}
 
-          {/* Live Auction Panel */}
+          {/* Live Public Auction Card */}
           {state.phase === 'AUCTION' && state.auction && (
-            <div className="animate-card-reveal w-full max-w-md bg-[#261C17]/95 border-2 border-[#C59B27] rounded-xl p-3 sm:p-4 text-center shadow-2xl">
-              <div className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold text-[#E5C158] tracking-widest">
-                <Gavel className="w-3.5 h-3.5" />
-                <span>Licitație Publică la Primărie</span>
+            <div className="w-full max-w-sm bg-[#FAF8F5] border-2 border-[#141414] shadow-[4px_4px_0_#141414] p-3.5 text-center">
+              <div className="text-[10px] uppercase font-black tracking-widest bg-[#141414] text-white py-0.5 px-2 inline-block">
+                LICITAȚIE PUBLICĂ
               </div>
-              <div className="font-editorial text-sm sm:text-base font-bold text-white mt-0.5">
+              <div className="text-sm sm:text-base font-black text-[#141414] mt-1.5 uppercase">
                 {t(state.tiles[state.auction.tileIndex].name, lang)}
               </div>
-              <div className="text-xs text-[#D6C7B2] mt-1">
-                Oferta curentă:{' '}
-                <strong className="font-mono-num text-[#E5C158] text-sm">
+              <div className="text-xs text-[#141414] mt-1 font-mono-num">
+                Oferta maximă:{' '}
+                <strong className="text-[#E32626] text-sm">
                   {state.auction.currentBid} MDL
                 </strong>
                 {state.auction.highestBidderId && (
@@ -366,7 +497,7 @@ export const MonopolyBoard: React.FC<MonopolyBoardProps> = ({
               {myPlayer &&
                 !myPlayer.bankrupt &&
                 !state.auction.passedPlayers[myPlayer.id] && (
-                  <div className="mt-2.5 flex flex-wrap items-center justify-center gap-2">
+                  <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
                     <button
                       onClick={() =>
                         onSendAction('PLACE_BID', {
@@ -376,13 +507,13 @@ export const MonopolyBoard: React.FC<MonopolyBoardProps> = ({
                               : state.auction!.currentBid + 10,
                         })
                       }
-                      className="px-3 py-1.5 rounded-lg bg-[#1E6B45] hover:bg-[#165234] text-white font-bold text-xs shadow"
+                      className="px-3 py-1.5 bg-[#1EA350] hover:bg-[#188741] text-white border-[1.5px] border-[#141414] shadow-[2px_2px_0_#141414] font-bold text-xs uppercase"
                     >
                       +10 MDL (
                       {state.auction.highestBidderId === ''
                         ? 10
-                        : state.auction.currentBid + 10}{' '}
-                      MDL)
+                        : state.auction.currentBid + 10}
+                      )
                     </button>
                     <button
                       onClick={() =>
@@ -390,13 +521,13 @@ export const MonopolyBoard: React.FC<MonopolyBoardProps> = ({
                           amount: state.auction!.currentBid + 50,
                         })
                       }
-                      className="px-3 py-1.5 rounded-lg bg-[#B45309] hover:bg-[#92400E] text-white font-bold text-xs shadow"
+                      className="px-3 py-1.5 bg-[#F58220] hover:bg-[#DC6E12] text-[#141414] border-[1.5px] border-[#141414] shadow-[2px_2px_0_#141414] font-bold text-xs uppercase"
                     >
-                      +50 MDL ({state.auction.currentBid + 50} MDL)
+                      +50 MDL ({state.auction.currentBid + 50})
                     </button>
                     <button
                       onClick={() => onSendAction('PASS_AUCTION')}
-                      className="px-3 py-1.5 rounded-lg bg-[#3A2D27] hover:bg-[#4A3A32] text-[#D6C7B2] font-bold text-xs"
+                      className="px-3 py-1.5 bg-white hover:bg-neutral-100 text-[#141414] border-[1.5px] border-[#141414] shadow-[2px_2px_0_#141414] font-bold text-xs uppercase"
                     >
                       Pas
                     </button>
@@ -405,28 +536,28 @@ export const MonopolyBoard: React.FC<MonopolyBoardProps> = ({
             </div>
           )}
 
-          {/* Active Player Banner + 3D Animated Dice + Action Console */}
+          {/* Active Turn Indicator + Dice + Mechanical Buttons */}
           {currentPlayer && state.phase !== 'GAME_OVER' && (
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex items-center gap-2 bg-[#261D18] px-3.5 py-1 rounded-full border border-[#4A382E]">
-                <span className="text-[11px] text-[#B8A99A]">
+            <div className="flex flex-col items-center gap-2.5">
+              <div className="flex items-center gap-2 bg-[#FAF8F5] px-3 py-1 border-[1.5px] border-[#141414] shadow-[2px_2px_0_#141414]">
+                <span className="text-[10px] font-bold uppercase text-neutral-600">
                   {t(UI_TEXT.turnOf, lang)}
                 </span>
                 <span
-                  className="w-5 h-5 rounded-full flex items-center justify-center text-white border border-white/40"
+                  className="w-4 h-4 rounded-full flex items-center justify-center text-white border border-[#141414]"
                   style={{ backgroundColor: currentPlayer.color }}
                 >
-                  <TokenSvg tokenId={currentPlayer.token} className="w-3 h-3" />
+                  <TokenSvg tokenId={currentPlayer.token} className="w-2.5 h-2.5" />
                 </span>
-                <span className="font-bold text-xs sm:text-sm text-white">
+                <span className="font-black text-xs sm:text-sm uppercase">
                   {currentPlayer.name}
                 </span>
-                <span className="font-mono-num text-xs font-bold text-[#E5C158]">
+                <span className="font-mono-num text-xs font-bold text-[#1EA350]">
                   {currentPlayer.cash} MDL
                 </span>
               </div>
 
-              {/* 3D Animated Tumbling Dice */}
+              {/* 3D Animated Dice on Board Felt */}
               <Dice3D
                 dice={state.lastDice}
                 isRollingTrigger={rollTrigger}
@@ -441,59 +572,51 @@ export const MonopolyBoard: React.FC<MonopolyBoardProps> = ({
                     <>
                       <button
                         onClick={() => onSendAction('ROLL_DICE')}
-                        className="px-5 py-2 rounded-lg bg-[#C59B27] hover:bg-[#D4AB37] text-[#16110E] font-bold text-xs sm:text-sm shadow-lg transition transform active:scale-95 uppercase tracking-wider"
+                        className="px-5 py-2 bg-[#E32626] hover:bg-[#C81E1E] text-white font-black text-xs sm:text-sm border-2 border-[#141414] shadow-[3px_3px_0_#141414] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none uppercase tracking-wider"
                       >
                         {t(UI_TEXT.rollDice, lang)}
                       </button>
                       {currentPlayer.inJail && currentPlayer.cash >= 50 && (
                         <button
                           onClick={() => onSendAction('PAY_JAIL_BAIL')}
-                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#7C1D26] hover:bg-[#9F1239] text-white font-bold text-xs shadow"
+                          className="px-3 py-2 bg-[#FAF8F5] hover:bg-white text-[#141414] font-bold text-xs border-2 border-[#141414] shadow-[2px_2px_0_#141414] uppercase"
                         >
-                          <KeyRound className="w-3.5 h-3.5" />
-                          <span>{t(UI_TEXT.payBail, lang)}</span>
+                          {t(UI_TEXT.payBail, lang)}
                         </button>
                       )}
                       {currentPlayer.inJail &&
                         currentPlayer.getOutOfJailFree > 0 && (
                           <button
                             onClick={() => onSendAction('USE_JAIL_CARD')}
-                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#1E3A8A] hover:bg-[#1D4ED8] text-white font-bold text-xs shadow"
+                            className="px-3 py-2 bg-[#FDE021] hover:bg-[#F5D400] text-[#141414] font-bold text-xs border-2 border-[#141414] shadow-[2px_2px_0_#141414] uppercase"
                           >
-                            <KeyRound className="w-3.5 h-3.5" />
-                            <span>{t(UI_TEXT.useJailCard, lang)}</span>
+                            {t(UI_TEXT.useJailCard, lang)}
                           </button>
                         )}
                     </>
                   )}
 
                   {state.phase === 'BUY_OR_AUCTION' && currentTile && (
-                    <div className="flex flex-col items-center gap-2 bg-[#261D18] p-2.5 sm:p-3 rounded-xl border border-[#C59B27]/60 shadow-xl">
-                      <div className="text-xs sm:text-sm font-bold text-center flex items-center gap-1.5">
-                        <Building className="w-4 h-4 text-[#E5C158]" />
-                        <span>{t(currentTile.name, lang)}</span>
-                        <span className="font-mono-num text-[#E5C158]">
-                          — {currentTile.price} MDL
+                    <div className="flex flex-col items-center gap-2 bg-[#FAF8F5] p-3 border-2 border-[#141414] shadow-[4px_4px_0_#141414]">
+                      <div className="text-xs sm:text-sm font-black uppercase text-center">
+                        {t(currentTile.name, lang)} —{' '}
+                        <span className="font-mono-num text-[#1EA350]">
+                          {currentTile.price} MDL
                         </span>
                       </div>
                       <div className="flex flex-wrap justify-center gap-2">
                         <button
                           disabled={currentPlayer.cash < currentTile.price}
                           onClick={() => onSendAction('BUY_PROPERTY')}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#1E6B45] hover:bg-[#165234] disabled:opacity-40 text-white font-bold text-xs shadow"
+                          className="px-3.5 py-1.5 bg-[#1EA350] hover:bg-[#168A41] disabled:opacity-40 text-white font-black text-xs border-[1.5px] border-[#141414] shadow-[2px_2px_0_#141414] uppercase"
                         >
-                          <Check className="w-3.5 h-3.5" />
-                          <span>
-                            {t(UI_TEXT.buyProperty, lang)} ({currentTile.price}{' '}
-                            MDL)
-                          </span>
+                          {t(UI_TEXT.buyProperty, lang)} ({currentTile.price} MDL)
                         </button>
                         <button
                           onClick={() => onSendAction('DECLINE_PROPERTY')}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#8E5B18] hover:bg-[#A66B1E] text-white font-bold text-xs shadow"
+                          className="px-3 py-1.5 bg-white hover:bg-neutral-100 text-[#141414] font-bold text-xs border-[1.5px] border-[#141414] shadow-[2px_2px_0_#141414] uppercase"
                         >
-                          <Gavel className="w-3.5 h-3.5" />
-                          <span>{t(UI_TEXT.sendToAuction, lang)}</span>
+                          {t(UI_TEXT.sendToAuction, lang)}
                         </button>
                       </div>
                     </div>
@@ -503,42 +626,37 @@ export const MonopolyBoard: React.FC<MonopolyBoardProps> = ({
                     <div className="flex flex-wrap items-center justify-center gap-2">
                       <button
                         onClick={() => onSendAction('END_TURN')}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#1E6B45] hover:bg-[#165234] text-white font-bold text-xs sm:text-sm shadow-lg uppercase tracking-wider"
+                        className="px-5 py-2 bg-[#1EA350] hover:bg-[#168A41] text-white font-black text-xs sm:text-sm border-2 border-[#141414] shadow-[3px_3px_0_#141414] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none uppercase tracking-wider"
                       >
-                        <span>{t(UI_TEXT.endTurn, lang)}</span>
-                        <ArrowRight className="w-4 h-4" />
+                        {t(UI_TEXT.endTurn, lang)}
                       </button>
                       <button
                         onClick={onOpenTradeModal}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#3A2C24] hover:bg-[#4A382E] border border-[#6E5647] text-[#F5EFE6] font-bold text-xs sm:text-sm shadow"
+                        className="px-3.5 py-2 bg-[#FAF8F5] hover:bg-white text-[#141414] font-bold text-xs sm:text-sm border-2 border-[#141414] shadow-[3px_3px_0_#141414] uppercase"
                       >
-                        <Handshake className="w-3.5 h-3.5 text-[#E5C158]" />
-                        <span>{t(UI_TEXT.proposeTrade, lang)}</span>
+                        {t(UI_TEXT.proposeTrade, lang)}
                       </button>
                     </div>
                   )}
 
                   {state.phase === 'DEBT' && state.pendingDebt && (
-                    <div className="flex flex-col items-center gap-2 bg-[#3B1216] border border-[#B91C1C] p-3 rounded-xl">
-                      <p className="text-xs text-[#FECACA] font-semibold text-center flex items-center gap-1.5">
-                        <AlertTriangle className="w-4 h-4 text-[#F87171]" />
-                        <span>
-                          Datorie: <strong>{state.pendingDebt.amount} MDL</strong>{' '}
-                          (Disponibil: {currentPlayer.cash} MDL)
-                        </span>
+                    <div className="flex flex-col items-center gap-2 bg-[#FAF8F5] border-2 border-[#E32626] p-3 shadow-[4px_4px_0_#141414]">
+                      <p className="text-xs text-[#E32626] font-bold uppercase text-center">
+                        Datorie: {state.pendingDebt.amount} MDL (Disponibil:{' '}
+                        {currentPlayer.cash} MDL)
                       </p>
                       <div className="flex gap-2">
                         {currentPlayer.cash >= state.pendingDebt.amount && (
                           <button
                             onClick={() => onSendAction('PAY_DEBT')}
-                            className="px-3.5 py-1.5 rounded-lg bg-[#1E6B45] hover:bg-[#165234] text-white font-bold text-xs"
+                            className="px-3.5 py-1.5 bg-[#1EA350] text-white font-bold text-xs border-[1.5px] border-[#141414] uppercase"
                           >
                             {t(UI_TEXT.payDebt, lang)}
                           </button>
                         )}
                         <button
                           onClick={() => onSendAction('DECLARE_BANKRUPTCY')}
-                          className="px-3.5 py-1.5 rounded-lg bg-[#991B1B] hover:bg-[#7F1D1D] text-white font-bold text-xs"
+                          className="px-3.5 py-1.5 bg-[#E32626] text-white font-bold text-xs border-[1.5px] border-[#141414] uppercase"
                         >
                           {t(UI_TEXT.declareBankruptcy, lang)}
                         </button>
@@ -550,29 +668,27 @@ export const MonopolyBoard: React.FC<MonopolyBoardProps> = ({
             </div>
           )}
 
-          {/* Game Over Winner Banner */}
+          {/* Game Over Winner Card */}
           {state.phase === 'GAME_OVER' && state.winnerId && (
-            <div className="bg-[#261D18] border-2 border-[#C59B27] rounded-2xl p-4 text-center max-w-md shadow-2xl">
-              <Trophy className="w-8 h-8 text-[#E5C158] mx-auto mb-1" />
-              <h3 className="font-editorial text-lg font-bold text-[#E5C158]">
+            <div className="bg-[#FAF8F5] border-2 border-[#141414] shadow-[6px_6px_0_#141414] p-5 text-center max-w-sm">
+              <div className="text-xs font-bold uppercase tracking-widest text-[#E32626]">
+                CÂȘTIGĂTORUL PARTIDEI
+              </div>
+              <h3 className="text-xl font-black uppercase mt-1">
                 {getPlayerById(state.winnerId)?.name}
               </h3>
-              <p className="text-xs text-[#D6C7B2] mt-1">
-                Magnatul Imobiliar al Chișinăului
-              </p>
               <button
                 onClick={() => onSendAction('RESET_GAME')}
-                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#C59B27] hover:bg-[#D4AB37] text-[#16110E] font-bold text-xs uppercase tracking-wider"
+                className="mt-3 px-4 py-2 bg-[#E32626] text-white font-black text-xs border-2 border-[#141414] shadow-[2px_2px_0_#141414] uppercase"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>{t(UI_TEXT.resetRoom, lang)}</span>
+                {t(UI_TEXT.resetRoom, lang)}
               </button>
             </div>
           )}
         </div>
 
-        {/* Bottom Hint */}
-        <div className="relative z-10 text-center text-[9.5px] text-[#9E8E7E] border-t border-[#3A2C24] pt-1">
+        {/* Bottom Print Caption */}
+        <div className="relative z-10 text-center text-[9px] font-bold uppercase tracking-wider text-[#141414]/70">
           {t(UI_TEXT.clickTileHint, lang)}
         </div>
       </div>

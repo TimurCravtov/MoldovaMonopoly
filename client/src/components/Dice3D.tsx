@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 interface Dice3DProps {
   dice: [number, number];
-  isRollingTrigger: number; // increments whenever a roll happens
+  isRollingTrigger: number;
   onRollClick?: () => void;
   canRoll?: boolean;
 }
@@ -26,7 +26,7 @@ const DieFace: React.FC<{ value: number; rolling: boolean; index: number }> = ({
 
   return (
     <div
-      className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-[#FAF6EE] border-2 border-[#C8B99E] shadow-[0_6px_0_#9E8C6C,0_10px_20px_rgba(0,0,0,0.35)] p-2 grid grid-cols-3 grid-rows-3 place-items-center transition-transform duration-300 ${
+      className={`w-11 h-11 sm:w-12 sm:h-12 bg-white border-2 border-[#141414] shadow-[3px_3px_0_#141414] p-1.5 grid grid-cols-3 grid-rows-3 place-items-center transition-transform ${
         rolling
           ? index === 0
             ? 'animate-die-tumble-left'
@@ -36,15 +36,12 @@ const DieFace: React.FC<{ value: number; rolling: boolean; index: number }> = ({
     >
       {Array.from({ length: 9 }).map((_, cellIdx) => {
         const hasPip = activePips.includes(cellIdx);
-        const isCenterAce = safeVal === 1 && cellIdx === 4;
         return (
           <span
             key={cellIdx}
-            className={`rounded-full transition-all duration-150 ${
+            className={`rounded-full ${
               hasPip
-                ? isCenterAce
-                  ? 'w-3 h-3 bg-[#8B1E24] shadow-inner'
-                  : 'w-2.2 h-2.2 sm:w-2.5 sm:h-2.5 bg-[#1E1B18] shadow-inner'
+                ? 'w-2 h-2 sm:w-2.5 sm:h-2.5 bg-[#141414]'
                 : 'w-0 h-0 opacity-0'
             }`}
           />
@@ -70,27 +67,24 @@ export const Dice3D: React.FC<Dice3DProps> = ({
     if (isRollingTrigger === 0 && dice[0] === 0) return;
     setRolling(true);
 
-    // Rapidly cycle random faces while tumbling
     const interval = setInterval(() => {
       setDisplayDice([
         Math.floor(Math.random() * 6) + 1,
         Math.floor(Math.random() * 6) + 1,
       ]);
-    }, 65);
+    }, 60);
 
     const timeout = setTimeout(() => {
       clearInterval(interval);
       setDisplayDice([dice[0] || 1, dice[1] || 1]);
       setRolling(false);
-    }, 520);
+    }, 450);
 
     return () => {
       clearInterval(interval);
       clearTimeout(timeout);
     };
   }, [isRollingTrigger, dice[0], dice[1]]);
-
-  const isDoubles = !rolling && dice[0] > 0 && dice[0] === dice[1];
 
   return (
     <div
@@ -99,11 +93,9 @@ export const Dice3D: React.FC<Dice3DProps> = ({
           onRollClick();
         }
       }}
-      className={`inline-flex items-center gap-3.5 px-4 py-2.5 rounded-2xl transition ${
-        canRoll
-          ? 'cursor-pointer bg-[#231915]/70 hover:bg-[#2E201B]/90 ring-1 ring-[#C59B27]/50'
-          : 'bg-[#1A1310]/50'
-      } ${isDoubles ? 'ring-2 ring-[#C59B27]' : ''}`}
+      className={`inline-flex items-center gap-3 px-2 py-1 ${
+        canRoll ? 'cursor-pointer' : ''
+      }`}
     >
       <DieFace value={displayDice[0]} rolling={rolling} index={0} />
       <DieFace value={displayDice[1]} rolling={rolling} index={1} />
