@@ -18,3 +18,4 @@ server/*.exe
 .vscode/
 .idea/
 *.log
+*.tsbuildinfo
