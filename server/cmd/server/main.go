@@ -47,20 +47,22 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		if r.Method == http.MethodPost {
 			var req struct {
-				ID   string `json:"id"`
-				Name string `json:"name"`
+				ID       string             `json:"id"`
+				Name     string             `json:"name"`
+				Settings *game.GameSettings `json:"settings"`
 			}
 			_ = json.NewDecoder(r.Body).Decode(&req)
 			if req.ID == "" {
-				req.ID = fmt.Sprintf("room-%d", time.Now().Unix()%10000)
+				req.ID = fmt.Sprintf("masa-%d", time.Now().UnixMilli()%100000)
 			}
 			if req.Name == "" {
-				req.Name = "Camera Chișinău"
+				req.Name = fmt.Sprintf("Masa Chișinău #%d", time.Now().Unix()%1000)
 			}
-			room := hub.GetOrCreateRoom(req.ID, req.Name)
-			_ = json.NewEncoder(w).Encode(map[string]string{
-				"id":   room.ID,
-				"name": room.Name,
+			room := hub.CreateRoom(req.ID, req.Name, req.Settings)
+			_ = json.NewEncoder(w).Encode(map[string]interface{}{
+				"id":       room.ID,
+				"name":     room.Name,
+				"settings": room.Engine.State.Settings,
 			})
 			return
 		}
