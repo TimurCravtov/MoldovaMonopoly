@@ -13,22 +13,28 @@ import { TradeModal } from './components/TradeModal';
 import { TokenSvg } from './components/icons/MoldovaIcons';
 
 function getOrCreatePlayerId(): string {
-  const key = 'chisinau_monopoly_player_id';
-  let id = localStorage.getItem(key);
+  const key = 'chisinau_monopoly_tab_player_id';
+  let id = sessionStorage.getItem(key);
   if (!id) {
     id = 'p_' + Math.random().toString(36).substring(2, 10);
-    localStorage.setItem(key, id);
+    sessionStorage.setItem(key, id);
   }
   return id;
 }
 
+function getInitialRoomId(): string {
+  const params = new URLSearchParams(window.location.search);
+  const fromUrl = params.get('room')?.trim();
+  return fromUrl || 'chisinau-central';
+}
+
 function getSavedPlayerName(): string {
-  return localStorage.getItem('chisinau_monopoly_player_name') || 'Orășean';
+  return sessionStorage.getItem('chisinau_monopoly_player_name') || 'Orășean';
 }
 
 export function App() {
   const [lang, setLang] = useState<Language>('ro');
-  const [roomId, setRoomId] = useState<string>('chisinau-central');
+  const [roomId, setRoomId] = useState<string>(getInitialRoomId);
   const [myPlayerId] = useState<string>(getOrCreatePlayerId);
   const [state, setState] = useState<GameState | null>(null);
   const [errorToast, setErrorToast] = useState<string | null>(null);
@@ -37,6 +43,7 @@ export function App() {
   const [connected, setConnected] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [boardOnly, setBoardOnly] = useState<boolean>(false);
+  const [copiedInvite, setCopiedInvite] = useState<boolean>(false);
 
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -47,6 +54,26 @@ export function App() {
     document.addEventListener('fullscreenchange', onFsChange);
     return () => document.removeEventListener('fullscreenchange', onFsChange);
   }, []);
+
+  // Keep ?room=<roomId> synced in browser address bar so copying URL always works
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('room', roomId);
+    window.history.replaceState({}, '', url.toString());
+  }, [roomId]);
+
+  const handleCopyInviteLink = async () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('room', roomId);
+    try {
+      await navigator.clipboard.writeText(url.toString());
+      setCopiedInvite(true);
+      setTimeout(() => setCopiedInvite(false), 2500);
+    } catch {
+      // Fallback prompt if clipboard permission denied
+      window.prompt('Copy invite link:', url.toString());
+    }
+  };
 
   const toggleFullscreen = async () => {
     try {
@@ -62,12 +89,8 @@ export function App() {
 
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host =
-      window.location.port === '5173'
-        ? `${window.location.hostname}:8080`
-        : window.location.host;
     const savedName = encodeURIComponent(getSavedPlayerName());
-    const wsUrl = `${protocol}//${host}/ws?roomId=${encodeURIComponent(
+    const wsUrl = `${protocol}//${window.location.host}/ws?roomId=${encodeURIComponent(
       roomId
     )}&playerId=${encodeURIComponent(myPlayerId)}&playerName=${savedName}`;
 
@@ -87,7 +110,7 @@ export function App() {
             (p) => p.id === myPlayerId
           );
           if (me) {
-            localStorage.setItem('chisinau_monopoly_player_name', me.name);
+            sessionStorage.setItem('chisinau_monopoly_player_name', me.name);
           }
           if (msg.state.phase === 'GAME_OVER' && msg.state.winnerId) {
             confetti({
@@ -168,6 +191,20 @@ export function App() {
             <option value="botanica-gates">Sala Porțile Orașului</option>
             <option value="cricova-vip">Sala Beciurile Cricova</option>
           </select>
+
+          {/* Copy Invite Link Button */}
+          <button
+            onClick={handleCopyInviteLink}
+            className={`px-2.5 py-1 border-[1.5px] border-[#141414] text-[11px] font-black uppercase transition ${
+              copiedInvite
+                ? 'bg-[#1EA350] text-white'
+                : 'bg-[#FDE021] hover:bg-[#F5D400] text-[#141414]'
+            }`}
+          >
+            {copiedInvite
+              ? t(UI_TEXT.copiedInvite, lang)
+              : t(UI_TEXT.copyInvite, lang)}
+          </button>
 
           {/* Language Switcher: RO / EN / RU */}
           <div className="flex border-[1.5px] border-[#141414] bg-white">
