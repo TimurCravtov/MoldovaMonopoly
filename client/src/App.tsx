@@ -10,6 +10,7 @@ import { MonopolyBoard } from './components/MonopolyBoard';
 import { PropertyDeedCard } from './components/PropertyDeedCard';
 import { LobbyView } from './components/LobbyView';
 import { TradeModal } from './components/TradeModal';
+import { RoomBrowser } from './components/RoomBrowserModal';
 import { TokenSvg } from './components/icons/MoldovaIcons';
 
 function getOrCreatePlayerId(): string {
@@ -40,6 +41,7 @@ export function App() {
   const [errorToast, setErrorToast] = useState<string | null>(null);
   const [selectedTileIdx, setSelectedTileIdx] = useState<number | null>(39);
   const [showTradeModal, setShowTradeModal] = useState<boolean>(false);
+  const [showRoomBrowser, setShowRoomBrowser] = useState<boolean>(false);
   const [connected, setConnected] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [boardOnly, setBoardOnly] = useState<boolean>(false);
@@ -181,16 +183,18 @@ export function App() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Room Selector */}
-          <select
-            value={roomId}
-            onChange={(e) => setRoomId(e.target.value)}
-            className="bg-white border-[1.5px] border-[#141414] text-xs px-2 py-1 text-[#141414] font-bold uppercase focus:outline-none hidden md:block"
+          {/* Active Room Badge + Open VK Room Browser Modal */}
+          <button
+            onClick={() => setShowRoomBrowser(true)}
+            className="px-2.5 py-1 bg-white hover:bg-[#D8E5D7] border-[1.5px] border-[#141414] text-[11px] font-black uppercase text-[#141414] flex items-center gap-1.5 cursor-pointer"
           >
-            <option value="chisinau-central">Sala PMAN (Central)</option>
-            <option value="botanica-gates">Sala Porțile Orașului</option>
-            <option value="cricova-vip">Sala Beciurile Cricova</option>
-          </select>
+            <span className="truncate max-w-[160px]">
+              {state?.roomName || roomId}
+            </span>
+            <span className="px-1.5 py-0.2 bg-[#141414] text-white font-mono text-[9px]">
+              {t(UI_TEXT.roomBrowser, lang).split(' ')[0]}
+            </span>
+          </button>
 
           {/* Copy Invite Link Button */}
           <button
@@ -290,6 +294,7 @@ export function App() {
             myPlayerId={myPlayerId}
             lang={lang}
             onSendAction={sendAction}
+            onSwitchRoom={(id) => setRoomId(id)}
           />
         </main>
       ) : (
@@ -531,6 +536,16 @@ export function App() {
           lang={lang}
           onClose={() => setShowTradeModal(false)}
           onSendAction={sendAction}
+        />
+      )}
+
+      {/* VK Monopoly Style Room Browser & Custom Table Modal */}
+      {showRoomBrowser && (
+        <RoomBrowser
+          lang={lang}
+          currentRoomId={roomId}
+          onSelectRoom={(id) => setRoomId(id)}
+          onClose={() => setShowRoomBrowser(false)}
         />
       )}
     </div>
