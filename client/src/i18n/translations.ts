@@ -256,4 +256,24 @@ export const UI_TEXT = {
     en: 'New Match',
     ru: 'Новая партия',
   },
+  fullscreen: {
+    ro: 'Ecran Complet',
+    en: 'Fullscreen',
+    ru: 'Полный экран',
+  },
+  exitFullscreen: {
+    ro: 'Ieșire Ecran',
+    en: 'Exit Fullscreen',
+    ru: 'Оконный режим',
+  },
+  boardOnly: {
+    ro: 'Doar Tabla',
+    en: 'Board Only',
+    ru: 'Только поле',
+  },
+  showSidebar: {
+    ro: 'Arată Panoul',
+    en: 'Show Panel',
+    ru: 'Показать панель',
+  },
 };

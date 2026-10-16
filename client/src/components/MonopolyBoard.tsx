@@ -23,6 +23,7 @@ interface MonopolyBoardProps {
   onSelectTile: (idx: number) => void;
   onSendAction: (action: string, payload?: Record<string, unknown>) => void;
   onOpenTradeModal: () => void;
+  expanded?: boolean;
 }
 
 function getGridCoords(index: number): {
@@ -55,6 +56,7 @@ export const MonopolyBoard: React.FC<MonopolyBoardProps> = ({
   onSelectTile,
   onSendAction,
   onOpenTradeModal,
+  expanded = false,
 }) => {
   const currentPlayer = state.players[state.currentPlayerIdx];
   const isMyTurn = currentPlayer?.id === myPlayerId;
@@ -140,7 +142,11 @@ export const MonopolyBoard: React.FC<MonopolyBoardProps> = ({
   };
 
   return (
-    <div className="board-viewport-square mx-auto bg-[#D8E5D7] text-[#141414] border-[3px] border-[#141414] shadow-[8px_8px_0_#141414] overflow-hidden monopoly-grid select-none relative">
+    <div
+      className={`${
+        expanded ? 'board-viewport-square-full' : 'board-viewport-square'
+      } mx-auto bg-[#D8E5D7] text-[#141414] border-[3px] border-[#141414] shadow-[8px_8px_0_#141414] overflow-hidden monopoly-grid select-none relative`}
+    >
       {/* 40 Perimeter Tiles */}
       {state.tiles.map((tile) => {
         const { row, col, side } = getGridCoords(tile.index);

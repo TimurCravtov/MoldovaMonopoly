@@ -52,6 +52,11 @@
   }
 }
 
+.board-viewport-square-full {
+  width: min(calc(100vh - 60px), calc(100vw - 20px));
+  height: min(calc(100vh - 60px), calc(100vw - 20px));
+}
+
 @keyframes dieTumbleLeft {
   0% {
     transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
