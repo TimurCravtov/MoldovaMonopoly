@@ -79,7 +79,7 @@ func main() {
 	mux.HandleFunc("/ws", hub.ServeWS)
 
 	addr := ":" + port
-	log.Printf("🇲🇩 Chișinău Monopoly Server listening on http://localhost%s", addr)
+	log.Printf("[CHISINAU MONOPOLY] Server listening on http://localhost%s", addr)
 	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatalf("server error: %v", err)
 	}
