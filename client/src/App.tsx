@@ -1,19 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
 import {
-  Users,
-  Handshake,
-  ScrollText,
-  RotateCcw,
-  MapPin,
-  Lock,
-  KeyRound,
-  AlertCircle,
-  Check,
-  X,
-  Loader2,
-} from 'lucide-react';
-import {
   GameState,
   GROUP_COLORS,
   Language,
@@ -23,12 +10,7 @@ import { MonopolyBoard } from './components/MonopolyBoard';
 import { PropertyDeedCard } from './components/PropertyDeedCard';
 import { LobbyView } from './components/LobbyView';
 import { TradeModal } from './components/TradeModal';
-import {
-  TokenSvg,
-  TileIcon,
-  HouseSvg,
-  HotelSvg,
-} from './components/icons/MoldovaIcons';
+import { TokenSvg } from './components/icons/MoldovaIcons';
 
 function getOrCreatePlayerId(): string {
   const key = 'chisinau_monopoly_player_id';
@@ -134,36 +116,31 @@ export function App() {
     <div
       className={`${
         isGameActive ? 'h-screen overflow-hidden' : 'min-h-screen'
-      } bg-[#16110E] text-[#F5EFE6] flex flex-col`}
+      } bg-[#E6E2D8] text-[#141414] flex flex-col`}
     >
-      {/* Compact Editorial Top Bar (52px) */}
-      <header className="h-[52px] shrink-0 bg-[#1E1612] border-b border-[#3A2C24] px-4 flex items-center justify-between gap-3 z-30">
-        <div className="flex items-center gap-3">
-          {/* Moldovan Tricolor Vertical Ribbon */}
-          <div className="flex h-5 w-3 rounded-xs overflow-hidden border border-white/20 shrink-0">
-            <span className="flex-1 bg-[#0046AE]" />
-            <span className="flex-1 bg-[#FFD200]" />
-            <span className="flex-1 bg-[#CC092F]" />
+      {/* Compact Print Top Bar (48px) */}
+      <header className="h-[48px] shrink-0 bg-[#FAF8F5] border-b-2 border-[#141414] px-4 flex items-center justify-between gap-3 z-30">
+        <div className="flex items-center gap-2.5">
+          <div className="bg-[#E32626] text-white font-black text-xs px-2 py-0.5 border-[1.5px] border-[#141414] tracking-widest uppercase">
+            MONOPOLY
           </div>
-          <div className="flex items-center gap-2">
-            <span className="font-editorial font-bold text-sm sm:text-base tracking-wider text-[#E5C158] uppercase">
-              {t(UI_TEXT.title, lang)}
-            </span>
-            <span
-              className={`inline-block w-2 h-2 rounded-full ${
-                connected ? 'bg-[#4ADE80]' : 'bg-[#EF4444]'
-              }`}
-              title={connected ? 'Online' : 'Offline'}
-            />
-          </div>
+          <span className="font-black text-xs sm:text-sm uppercase tracking-wider text-[#141414] hidden sm:inline">
+            CHIȘINĂU & MOLDOVA
+          </span>
+          <span
+            className={`inline-block w-2 h-2 rounded-full border border-[#141414] ${
+              connected ? 'bg-[#1EA350]' : 'bg-[#E32626]'
+            }`}
+            title={connected ? 'Online' : 'Offline'}
+          />
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           {/* Room Selector */}
           <select
             value={roomId}
             onChange={(e) => setRoomId(e.target.value)}
-            className="bg-[#140E0C] border border-[#3E2E25] text-xs rounded-lg px-2.5 py-1.5 text-[#D6C7B2] font-medium focus:outline-none focus:border-[#C59B27]"
+            className="bg-white border-[1.5px] border-[#141414] text-xs px-2 py-1 text-[#141414] font-bold uppercase focus:outline-none"
           >
             <option value="chisinau-central">Sala PMAN (Central)</option>
             <option value="botanica-gates">Sala Porțile Orașului</option>
@@ -171,15 +148,15 @@ export function App() {
           </select>
 
           {/* Language Switcher: RO / EN / RU */}
-          <div className="flex bg-[#140E0C] p-0.5 rounded-lg border border-[#3E2E25]">
+          <div className="flex border-[1.5px] border-[#141414] bg-white">
             {(['ro', 'en', 'ru'] as Language[]).map((l) => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase transition ${
+                className={`px-2 py-0.5 text-[11px] font-black uppercase transition ${
                   lang === l
-                    ? 'bg-[#C59B27] text-[#16110E] shadow'
-                    : 'text-[#9E8E7E] hover:text-white'
+                    ? 'bg-[#141414] text-white'
+                    : 'text-[#141414] hover:bg-neutral-200'
                 }`}
               >
                 {l}
@@ -190,12 +167,9 @@ export function App() {
           {isGameActive && (
             <button
               onClick={() => sendAction('RESET_GAME')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2A1E19] hover:bg-[#3A2C24] border border-[#4A382E] text-xs font-semibold text-[#E5C158]"
+              className="px-2.5 py-1 bg-white hover:bg-neutral-200 border-[1.5px] border-[#141414] text-[11px] font-black uppercase text-[#141414]"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">
-                {t(UI_TEXT.resetRoom, lang)}
-              </span>
+              {t(UI_TEXT.resetRoom, lang)}
             </button>
           )}
         </div>
@@ -203,21 +177,17 @@ export function App() {
 
       {/* Error Notification */}
       {errorToast && (
-        <div className="fixed bottom-4 right-4 z-50 bg-[#7C1D26] text-[#FAF6EE] px-4 py-2.5 rounded-xl shadow-2xl border border-[#F87171]/40 font-semibold text-xs sm:text-sm flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-[#FCA5A5] shrink-0" />
-          <span>{errorToast}</span>
+        <div className="fixed bottom-4 right-4 z-50 bg-[#E32626] text-white px-4 py-2 border-2 border-[#141414] shadow-[4px_4px_0_#141414] font-bold text-xs uppercase">
+          {errorToast}
         </div>
       )}
 
       {/* Main Content */}
       {!state ? (
         <div className="flex-1 flex items-center justify-center p-8 text-center">
-          <div className="space-y-3 flex flex-col items-center">
-            <Loader2 className="w-8 h-8 text-[#E5C158] animate-spin" />
-            <p className="text-sm text-[#B8A99A]">
-              Se conectează la serverul din Chișinău...
-            </p>
-          </div>
+          <p className="text-xs font-black uppercase tracking-widest text-[#141414]">
+            CONECTARE LA SERVERUL DIN CHIȘINĂU...
+          </p>
         </div>
       ) : state.phase === 'LOBBY' ? (
         <main className="flex-1 py-4 overflow-y-auto">
@@ -229,7 +199,7 @@ export function App() {
           />
         </main>
       ) : (
-        <main className="flex-1 min-h-0 w-full flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-3 p-2 sm:p-3 overflow-y-auto lg:overflow-hidden">
+        <main className="flex-1 min-h-0 w-full flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-3 p-2 sm:p-2.5 overflow-y-auto lg:overflow-hidden">
           {/* Left Stage: Full-Viewport Square 40-Tile Board */}
           <div className="flex-1 flex items-center justify-center min-h-0">
             <MonopolyBoard
@@ -243,8 +213,8 @@ export function App() {
             />
           </div>
 
-          {/* Right Sidebar: Independently Scrollable Inspector, Players & Chronicle */}
-          <aside className="w-full lg:w-[375px] xl:w-[400px] shrink-0 flex flex-col gap-3 lg:h-full lg:overflow-y-auto pr-0.5">
+          {/* Right Sidebar: Independently Scrollable Title Deed, Players & Chronicle */}
+          <aside className="w-full lg:w-[365px] xl:w-[380px] shrink-0 flex flex-col gap-3 lg:h-full lg:overflow-y-auto pr-0.5">
             {/* Incoming Pending Trades Alert */}
             {pendingTradesForMe.map((tr) => {
               const fromPlayer = state.players.find(
@@ -253,13 +223,12 @@ export function App() {
               return (
                 <div
                   key={tr.id}
-                  className="bg-[#261C17] border-2 border-[#C59B27] rounded-xl p-3 space-y-2 shadow-xl shrink-0"
+                  className="bg-[#FDE021] border-2 border-[#141414] shadow-[4px_4px_0_#141414] p-3 space-y-2 shrink-0"
                 >
-                  <div className="flex items-center gap-1.5 text-xs font-bold uppercase text-[#E5C158]">
-                    <Handshake className="w-4 h-4" />
-                    <span>Ofertă de la {fromPlayer?.name}</span>
+                  <div className="text-xs font-black uppercase text-[#141414]">
+                    OFERTĂ DE SCHIMB DE LA {fromPlayer?.name}
                   </div>
-                  <div className="text-xs space-y-1 text-[#EDE3D2]">
+                  <div className="text-xs space-y-1 text-[#141414]">
                     <div>
                       <strong>Primești:</strong> {tr.offerCash} MDL{' '}
                       {tr.offerProperties
@@ -281,10 +250,9 @@ export function App() {
                           accept: true,
                         })
                       }
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#1E6B45] hover:bg-[#165234] text-white font-bold text-xs"
+                      className="px-3 py-1 bg-[#1EA350] text-white border border-[#141414] font-black text-xs uppercase"
                     >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>Acceptă</span>
+                      Acceptă
                     </button>
                     <button
                       onClick={() =>
@@ -293,17 +261,16 @@ export function App() {
                           accept: false,
                         })
                       }
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#7C1D26] hover:bg-[#9F1239] text-white font-bold text-xs"
+                      className="px-3 py-1 bg-[#E32626] text-white border border-[#141414] font-black text-xs uppercase"
                     >
-                      <X className="w-3.5 h-3.5" />
-                      <span>Refuză</span>
+                      Refuză
                     </button>
                   </div>
                 </div>
               );
             })}
 
-            {/* Selected Tile Cadastral Deed Card */}
+            {/* Selected Tile Title Deed Card */}
             {selectedTile && (
               <div className="shrink-0">
                 <PropertyDeedCard
@@ -318,20 +285,16 @@ export function App() {
             )}
 
             {/* Players Standings & Portfolio */}
-            <div className="bg-[#1E1612] border border-[#3A2C24] rounded-xl p-3 space-y-2.5 shadow-xl shrink-0">
-              <div className="flex items-center justify-between border-b border-[#34261E] pb-2">
-                <div className="flex items-center gap-1.5">
-                  <Users className="w-3.5 h-3.5 text-[#E5C158]" />
-                  <h3 className="font-editorial text-xs font-bold uppercase tracking-wider text-[#E5C158]">
-                    {t(UI_TEXT.playersInRoom, lang)}
-                  </h3>
-                </div>
+            <div className="bg-[#FAF8F5] border-2 border-[#141414] shadow-[4px_4px_0_#141414] p-3 space-y-2.5 shrink-0">
+              <div className="flex items-center justify-between border-b-2 border-[#141414] pb-1.5">
+                <h3 className="text-xs font-black uppercase tracking-wider">
+                  {t(UI_TEXT.playersInRoom, lang)}
+                </h3>
                 <button
                   onClick={() => setShowTradeModal(true)}
-                  className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg bg-[#2C201B] hover:bg-[#3A2C24] border border-[#5C493E] text-[#E5C158] font-semibold"
+                  className="text-[10.5px] px-2 py-0.5 bg-white hover:bg-neutral-200 border border-[#141414] font-bold uppercase"
                 >
-                  <Handshake className="w-3 h-3" />
-                  <span>{t(UI_TEXT.proposeTrade, lang)}</span>
+                  {t(UI_TEXT.proposeTrade, lang)}
                 </button>
               </div>
 
@@ -344,61 +307,56 @@ export function App() {
                   return (
                     <div
                       key={p.id}
-                      className={`p-2.5 rounded-lg border transition ${
+                      className={`p-2 border-[1.5px] border-[#141414] ${
                         p.bankrupt
-                          ? 'opacity-40 bg-[#16100D] border-[#2A1E19]'
+                          ? 'opacity-40 bg-neutral-200'
                           : isTurn
-                          ? 'bg-[#281E18] border-[#C59B27] shadow-md'
-                          : 'bg-[#16100D]/90 border-[#34261E]'
+                          ? 'bg-[#D8E5D7] shadow-[2px_2px_0_#141414]'
+                          : 'bg-white'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="flex items-center gap-2 min-w-0">
                           <div
                             style={{ backgroundColor: p.color }}
-                            className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow border border-white/40 shrink-0"
+                            className="w-7 h-7 rounded-full flex items-center justify-center text-white border-[1.5px] border-[#141414] shrink-0"
                           >
                             <TokenSvg tokenId={p.token} className="w-4 h-4" />
                           </div>
                           <div className="min-w-0">
-                            <div className="font-bold text-xs flex items-center gap-1.5 truncate">
+                            <div className="font-black text-xs uppercase flex items-center gap-1.5 truncate">
                               <span className="truncate">{p.name}</span>
                               {p.id === myPlayerId && (
-                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#C59B27]/20 text-[#E5C158] border border-[#C59B27]/40">
+                                <span className="text-[8.5px] px-1 bg-[#141414] text-white">
                                   TU
                                 </span>
                               )}
                               {p.inJail && (
-                                <span className="inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.2 rounded bg-[#7C1D26] text-white">
-                                  <Lock className="w-2.5 h-2.5" />
-                                  <span>{t(UI_TEXT.inJailBadge, lang)}</span>
+                                <span className="text-[8.5px] px-1 bg-[#F58220] text-[#141414] border border-[#141414] font-black">
+                                  {t(UI_TEXT.inJailBadge, lang)}
                                 </span>
                               )}
                             </div>
-                            <div className="text-[10px] text-[#9E8E7E] flex items-center gap-1 truncate">
-                              <MapPin className="w-2.5 h-2.5 text-[#C59B27] shrink-0" />
-                              <span className="truncate">
-                                {t(state.tiles[p.position]?.name, lang)}
-                              </span>
+                            <div className="text-[10px] text-neutral-600 font-medium truncate">
+                              {t(state.tiles[p.position]?.name, lang)}
                             </div>
                           </div>
                         </div>
                         <div className="text-right shrink-0 ml-2">
-                          <div className="font-mono-num font-bold text-xs sm:text-sm text-[#4ADE80]">
+                          <div className="font-mono-num font-bold text-xs sm:text-sm text-[#141414]">
                             {p.cash} MDL
                           </div>
                           {p.getOutOfJailFree > 0 && (
-                            <div className="inline-flex items-center gap-1 text-[10px] text-[#E5C158]">
-                              <KeyRound className="w-2.5 h-2.5" />
-                              <span>×{p.getOutOfJailFree}</span>
+                            <div className="text-[9.5px] font-bold text-[#E32626] uppercase">
+                              ×{p.getOutOfJailFree} CUMĂTRU
                             </div>
                           )}
                         </div>
                       </div>
 
-                      {/* Owned Property Chips */}
+                      {/* Owned Property Color Swatches */}
                       {ownedTiles.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1 pt-1.5 border-t border-[#34261E]">
+                        <div className="mt-2 flex flex-wrap gap-1 pt-1.5 border-t border-neutral-300">
                           {ownedTiles.map((tile) => {
                             const grp =
                               GROUP_COLORS[tile.group] || GROUP_COLORS.NONE;
@@ -406,28 +364,17 @@ export function App() {
                               <button
                                 key={tile.index}
                                 onClick={() => setSelectedTileIdx(tile.index)}
-                                className={`text-[9.5px] px-1.5 py-0.5 rounded font-semibold flex items-center gap-1 border ${grp.bg} ${grp.text} ${
+                                className={`text-[9px] px-1.5 py-0.5 font-bold uppercase flex items-center gap-1 border border-[#141414] ${grp.bg} ${grp.text} ${
                                   tile.mortgaged ? 'opacity-45 line-through' : ''
                                 }`}
                                 title={t(tile.name, lang)}
                               >
-                                <TileIcon
-                                  iconKey={tile.icon}
-                                  className="w-2.5 h-2.5 shrink-0"
-                                />
-                                <span className="max-w-[82px] truncate">
+                                <span className="max-w-[85px] truncate">
                                   {t(tile.name, lang)}
                                 </span>
                                 {tile.houses > 0 && (
-                                  <span className="inline-flex items-center">
-                                    {tile.houses === 5 ? (
-                                      <HotelSvg className="w-2.5 h-2.5" />
-                                    ) : (
-                                      <>
-                                        ×{tile.houses}
-                                        <HouseSvg className="w-2.5 h-2.5" />
-                                      </>
-                                    )}
+                                  <span className="font-mono-num">
+                                    {tile.houses === 5 ? '[H]' : `[${tile.houses}]`}
                                   </span>
                                 )}
                               </button>
@@ -442,18 +389,17 @@ export function App() {
             </div>
 
             {/* Match Chronicle (Game Log) */}
-            <div className="bg-[#1E1612] border border-[#3A2C24] rounded-xl p-3 shadow-xl shrink-0">
-              <div className="flex items-center gap-1.5 border-b border-[#34261E] pb-1.5 mb-2">
-                <ScrollText className="w-3.5 h-3.5 text-[#E5C158]" />
-                <h3 className="font-editorial text-xs font-bold uppercase tracking-wider text-[#E5C158]">
+            <div className="bg-[#FAF8F5] border-2 border-[#141414] shadow-[4px_4px_0_#141414] p-3 shrink-0">
+              <div className="border-b-2 border-[#141414] pb-1 mb-2">
+                <h3 className="text-xs font-black uppercase tracking-wider">
                   {t(UI_TEXT.gameLog, lang)}
                 </h3>
               </div>
-              <div className="space-y-1.5 max-h-44 overflow-y-auto text-[11px] pr-1">
+              <div className="space-y-1 max-h-40 overflow-y-auto text-[11px] pr-1 font-medium">
                 {[...state.logs].reverse().map((entry) => (
                   <div
                     key={entry.id}
-                    className="text-[#D6C7B2] bg-[#16100D] px-2.5 py-1.5 rounded border border-[#2C201B] leading-snug"
+                    className="text-[#141414] bg-white px-2 py-1 border border-neutral-300 leading-snug"
                   >
                     {t(entry.text, lang)}
                   </div>

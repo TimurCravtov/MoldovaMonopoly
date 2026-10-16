@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { Handshake, X } from 'lucide-react';
 import { GameState, Language } from '../types/game';
 import { t } from '../i18n/translations';
-import { TileIcon } from './icons/MoldovaIcons';
 
 interface TradeModalProps {
   state: GameState;
@@ -72,26 +70,23 @@ export const TradeModal: React.FC<TradeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-[#201713] border-2 border-[#C59B27] rounded-2xl max-w-xl w-full p-5 shadow-2xl text-[#FAF6EE] max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between border-b border-[#34261E] pb-3 mb-4">
-          <div className="flex items-center gap-2">
-            <Handshake className="w-5 h-5 text-[#E5C158]" />
-            <h3 className="font-editorial text-lg font-bold text-[#E5C158]">
-              Contract de Schimb Imobiliar
-            </h3>
-          </div>
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+      <div className="bg-[#FAF8F5] text-[#141414] border-[3px] border-[#141414] shadow-[8px_8px_0_#141414] max-w-xl w-full p-5 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between border-b-2 border-[#141414] pb-2.5 mb-4">
+          <h3 className="text-base font-black uppercase tracking-wider">
+            CONTRACT DE SCHIMB IMOBILIAR
+          </h3>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-[#2C201B] hover:bg-[#3A2C24] text-xs"
+            className="px-2 py-0.5 border border-[#141414] bg-white hover:bg-neutral-200 font-black text-xs"
           >
-            <X className="w-4 h-4" />
+            ×
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs sm:text-sm">
           <div>
-            <label className="block text-[#B8A99A] mb-1 font-semibold">
+            <label className="block font-black uppercase text-xs mb-1">
               Partener de negociere:
             </label>
             <select
@@ -100,7 +95,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                 setTargetId(e.target.value);
                 setRequestProps([]);
               }}
-              className="w-full bg-[#16100D] border border-[#4A382E] rounded-xl px-3 py-2 text-[#FAF6EE] font-semibold"
+              className="w-full bg-white border-2 border-[#141414] px-3 py-2 font-bold"
             >
               {otherPlayers.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -112,12 +107,12 @@ export const TradeModal: React.FC<TradeModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* My Offer */}
-            <div className="bg-[#16100D] p-3 rounded-xl border border-[#34261E]">
-              <div className="font-bold text-[#4ADE80] mb-2">
-                Oferta ta ({myPlayer.name}):
+            <div className="bg-white p-3 border-2 border-[#141414]">
+              <div className="font-black uppercase text-xs text-[#1EA350] mb-2 border-b border-[#141414] pb-1">
+                OFERI ({myPlayer.name}):
               </div>
-              <label className="block text-xs text-[#B8A99A] mb-1">
-                Numerar MDL (Max {myPlayer.cash} MDL):
+              <label className="block text-[11px] font-bold mb-1">
+                Numerar MDL (Max {myPlayer.cash}):
               </label>
               <input
                 type="number"
@@ -125,21 +120,21 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                 max={myPlayer.cash}
                 value={offerCash}
                 onChange={(e) => setOfferCash(Number(e.target.value))}
-                className="w-full bg-[#201713] border border-[#4A382E] rounded-lg px-2.5 py-1.5 mb-3 text-white font-mono-num"
+                className="w-full bg-[#FAF8F5] border-[1.5px] border-[#141414] px-2.5 py-1.5 mb-3 font-mono-num font-bold"
               />
-              <div className="text-xs text-[#B8A99A] mb-1">
+              <div className="text-[11px] font-bold mb-1">
                 Proprietăți oferite:
               </div>
               <div className="space-y-1 max-h-40 overflow-y-auto">
                 {myTradableTiles.length === 0 && (
-                  <div className="text-[#6E5D4F] italic text-xs">
+                  <div className="text-neutral-500 italic text-xs">
                     Nicio proprietate eligibilă
                   </div>
                 )}
                 {myTradableTiles.map((tile) => (
                   <label
                     key={tile.index}
-                    className="flex items-center gap-2 cursor-pointer hover:bg-[#2A1E19] p-1 rounded"
+                    className="flex items-center gap-2 cursor-pointer hover:bg-neutral-100 p-1 text-xs font-medium"
                   >
                     <input
                       type="checkbox"
@@ -147,9 +142,8 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                       onChange={() =>
                         toggleProp(tile.index, offerProps, setOfferProps)
                       }
-                      className="accent-[#C59B27]"
+                      className="accent-[#141414]"
                     />
-                    <TileIcon iconKey={tile.icon} className="w-3.5 h-3.5 text-[#E5C158] shrink-0" />
                     <span className="truncate">
                       {t(tile.name, lang)} ({tile.price})
                     </span>
@@ -159,12 +153,12 @@ export const TradeModal: React.FC<TradeModalProps> = ({
             </div>
 
             {/* Target Request */}
-            <div className="bg-[#16100D] p-3 rounded-xl border border-[#34261E]">
-              <div className="font-bold text-[#E5C158] mb-2">
-                Solicitare de la {targetPlayer?.name}:
+            <div className="bg-white p-3 border-2 border-[#141414]">
+              <div className="font-black uppercase text-xs text-[#E32626] mb-2 border-b border-[#141414] pb-1">
+                CERI DE LA {targetPlayer?.name}:
               </div>
-              <label className="block text-xs text-[#B8A99A] mb-1">
-                Numerar MDL (Max {targetPlayer?.cash || 0} MDL):
+              <label className="block text-[11px] font-bold mb-1">
+                Numerar MDL (Max {targetPlayer?.cash || 0}):
               </label>
               <input
                 type="number"
@@ -172,21 +166,21 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                 max={targetPlayer?.cash || 0}
                 value={requestCash}
                 onChange={(e) => setRequestCash(Number(e.target.value))}
-                className="w-full bg-[#201713] border border-[#4A382E] rounded-lg px-2.5 py-1.5 mb-3 text-white font-mono-num"
+                className="w-full bg-[#FAF8F5] border-[1.5px] border-[#141414] px-2.5 py-1.5 mb-3 font-mono-num font-bold"
               />
-              <div className="text-xs text-[#B8A99A] mb-1">
+              <div className="text-[11px] font-bold mb-1">
                 Proprietăți solicitate:
               </div>
               <div className="space-y-1 max-h-40 overflow-y-auto">
                 {targetTradableTiles.length === 0 && (
-                  <div className="text-[#6E5D4F] italic text-xs">
+                  <div className="text-neutral-500 italic text-xs">
                     Nicio proprietate disponibilă
                   </div>
                 )}
                 {targetTradableTiles.map((tile) => (
                   <label
                     key={tile.index}
-                    className="flex items-center gap-2 cursor-pointer hover:bg-[#2A1E19] p-1 rounded"
+                    className="flex items-center gap-2 cursor-pointer hover:bg-neutral-100 p-1 text-xs font-medium"
                   >
                     <input
                       type="checkbox"
@@ -194,9 +188,8 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                       onChange={() =>
                         toggleProp(tile.index, requestProps, setRequestProps)
                       }
-                      className="accent-[#C59B27]"
+                      className="accent-[#141414]"
                     />
-                    <TileIcon iconKey={tile.icon} className="w-3.5 h-3.5 text-[#E5C158] shrink-0" />
                     <span className="truncate">
                       {t(tile.name, lang)} ({tile.price})
                     </span>
@@ -210,16 +203,15 @@ export const TradeModal: React.FC<TradeModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg bg-[#2C201B] hover:bg-[#3A2C24] text-[#D6C7B2] font-semibold"
+              className="px-4 py-2 bg-white hover:bg-neutral-100 border-2 border-[#141414] font-bold text-xs uppercase"
             >
               Anulează
             </button>
             <button
               type="submit"
-              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg bg-[#C59B27] hover:bg-[#D4AB37] text-[#16110E] font-bold shadow-lg uppercase tracking-wider text-xs"
+              className="px-5 py-2 bg-[#1EA350] hover:bg-[#168A41] text-white border-2 border-[#141414] shadow-[3px_3px_0_#141414] font-black text-xs uppercase tracking-wider"
             >
-              <Handshake className="w-4 h-4" />
-              <span>Trimite Oferta</span>
+              Trimite Oferta
             </button>
           </div>
         </form>

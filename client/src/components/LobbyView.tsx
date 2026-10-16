@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Users,
-  UserPlus,
-  Trash2,
-  Sliders,
-  Play,
-  Check,
-  UserCheck,
-} from 'lucide-react';
-import {
   GameState,
   Language,
   MOLDOVA_TOKENS,
@@ -46,34 +37,28 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-4 sm:p-6 space-y-6">
-      {/* Editorial Hero Banner with AI-Generated Engraving */}
-      <div className="relative overflow-hidden bg-[#221814] border-2 border-[#C59B27]/70 rounded-2xl p-6 sm:p-8 shadow-2xl flex flex-col sm:flex-row items-center gap-6">
-        <img
-          src="/assets/chisinau-emblem.jpg"
-          alt="Chișinău Emblem"
-          className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-2 border-[#C59B27] shadow-2xl shrink-0"
-        />
-        <div className="text-center sm:text-left space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-[#3A2820] border border-[#C59B27]/40 text-[11px] font-semibold uppercase tracking-widest text-[#E5C158]">
-            <span>Ediție Oficială de Masă</span>
-          </div>
-          <h1 className="font-editorial text-2xl sm:text-4xl font-bold text-[#FAF6EE] tracking-wide">
-            {t(UI_TEXT.title, lang)}
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+      {/* Classic Box Cover Header */}
+      <div className="bg-[#D8E5D7] border-[3px] border-[#141414] shadow-[6px_6px_0_#141414] p-6 text-center">
+        <div className="inline-block bg-[#E32626] text-white border-[2.5px] border-[#141414] shadow-[4px_4px_0_#141414] px-8 py-2.5 mb-3">
+          <h1 className="text-2xl sm:text-4xl font-black tracking-[0.15em] uppercase leading-none">
+            MONOPOLY
           </h1>
-          <p className="text-xs sm:text-sm text-[#C8B9A6] max-w-2xl">
-            {t(UI_TEXT.subtitle, lang)}
-          </p>
+          <div className="text-[10px] sm:text-xs font-bold tracking-[0.25em] uppercase mt-1 border-t border-white/40 pt-1">
+            CHIȘINĂU & MOLDOVA
+          </div>
         </div>
+        <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#141414] max-w-xl mx-auto">
+          {t(UI_TEXT.subtitle, lang)}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        {/* Left Card (7 cols): Customize Player & Municipal Rules */}
-        <div className="md:col-span-7 bg-[#201713] border border-[#3E2E25] rounded-2xl p-5 space-y-5 shadow-xl">
-          <div className="flex items-center gap-2 border-b border-[#34261E] pb-2.5">
-            <UserCheck className="w-4 h-4 text-[#E5C158]" />
-            <h2 className="font-editorial text-base font-bold text-[#E5C158] uppercase tracking-wider">
-              {t(UI_TEXT.yourName, lang)}
+        {/* Left Card (7 cols): Player Sheet & Rules */}
+        <div className="md:col-span-7 bg-[#FAF8F5] border-2 border-[#141414] shadow-[5px_5px_0_#141414] p-5 space-y-5">
+          <div className="border-b-2 border-[#141414] pb-2">
+            <h2 className="text-sm font-black uppercase tracking-wider text-[#141414]">
+              1. {t(UI_TEXT.yourName, lang)}
             </h2>
           </div>
 
@@ -91,8 +76,8 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                   );
                 }
               }}
-              placeholder="Ex: Arhitect Bernardazzi"
-              className="flex-1 bg-[#16100D] border border-[#4A382E] rounded-lg px-3.5 py-2 text-sm text-[#FAF6EE] focus:outline-none focus:border-[#C59B27]"
+              placeholder="Numele tău"
+              className="flex-1 bg-white border-2 border-[#141414] px-3 py-2 text-sm font-bold text-[#141414] focus:outline-none"
             />
             <button
               onClick={() => {
@@ -104,17 +89,16 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                   );
                 }
               }}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#C59B27] hover:bg-[#D4AB37] text-[#16110E] font-bold text-xs uppercase tracking-wider"
+              className="px-4 py-2 bg-[#141414] hover:bg-neutral-800 text-white font-black text-xs uppercase tracking-wider"
             >
-              <Check className="w-3.5 h-3.5" />
-              <span>Confirmă</span>
+              OK
             </button>
           </div>
 
-          {/* Vector SVG Token Selector */}
+          {/* Token Selector */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8A99A] mb-2.5">
-              {t(UI_TEXT.chooseToken, lang)}
+            <label className="block text-xs font-black uppercase tracking-wider text-[#141414] mb-2">
+              2. {t(UI_TEXT.chooseToken, lang)}
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {MOLDOVA_TOKENS.map((tok) => {
@@ -130,17 +114,17 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                         myPlayer.color
                       )
                     }
-                    className={`flex flex-col items-center p-2.5 rounded-xl border text-center transition ${
+                    className={`flex flex-col items-center p-2.5 border-2 text-center transition ${
                       selected
-                        ? 'bg-[#C59B27]/20 border-[#C59B27] text-[#FAF6EE] ring-1 ring-[#C59B27]'
-                        : 'bg-[#16100D]/80 border-[#382A22] hover:border-[#6E5647] text-[#C8B9A6]'
+                        ? 'bg-[#FDE021] border-[#141414] shadow-[2px_2px_0_#141414]'
+                        : 'bg-white border-neutral-400 hover:border-[#141414]'
                     }`}
                   >
                     <TokenSvg
                       tokenId={tok.id}
-                      className="w-6 h-6 mb-1.5 text-[#E5C158]"
+                      className="w-6 h-6 mb-1 text-[#141414]"
                     />
-                    <span className="text-[11px] font-semibold leading-tight">
+                    <span className="text-[10.5px] font-bold uppercase leading-tight">
                       {t(tok.name, lang)}
                     </span>
                   </button>
@@ -151,8 +135,8 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
 
           {/* Color Selector */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8A99A] mb-2">
-              {t(UI_TEXT.chooseColor, lang)}
+            <label className="block text-xs font-black uppercase tracking-wider text-[#141414] mb-2">
+              3. {t(UI_TEXT.chooseColor, lang)}
             </label>
             <div className="flex flex-wrap gap-2.5">
               {PLAYER_COLORS.map((col) => {
@@ -169,10 +153,10 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                       )
                     }
                     style={{ backgroundColor: col }}
-                    className={`w-8 h-8 rounded-full transition transform ${
+                    className={`w-8 h-8 border-2 border-[#141414] transition ${
                       selected
-                        ? 'scale-110 ring-2 ring-[#FAF6EE] shadow-lg'
-                        : 'opacity-75 hover:opacity-100'
+                        ? 'shadow-[3px_3px_0_#141414] -translate-y-0.5'
+                        : 'opacity-70 hover:opacity-100'
                     }`}
                   />
                 );
@@ -181,13 +165,12 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
           </div>
 
           {/* Municipal House Rules */}
-          <div className="pt-3 border-t border-[#34261E] space-y-2.5">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#E5C158]">
-              <Sliders className="w-3.5 h-3.5" />
-              <span>{t(UI_TEXT.gameSettings, lang)}</span>
+          <div className="pt-3 border-t-2 border-[#141414] space-y-2.5">
+            <div className="text-xs font-black uppercase tracking-wider text-[#141414]">
+              4. {t(UI_TEXT.gameSettings, lang)}
             </div>
 
-            <label className="flex items-center justify-between text-xs text-[#D6C7B2]">
+            <label className="flex items-center justify-between text-xs font-semibold">
               <span>{t(UI_TEXT.startingCash, lang)}</span>
               <select
                 value={state.settings.startingCash}
@@ -199,7 +182,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                     },
                   })
                 }
-                className="bg-[#16100D] border border-[#4A382E] rounded-lg px-2.5 py-1 text-[#E5C158] font-mono-num font-bold"
+                className="bg-white border-2 border-[#141414] px-2.5 py-1 font-mono-num font-bold"
               >
                 <option value={1000}>1000 MDL</option>
                 <option value={1500}>1500 MDL (Standard)</option>
@@ -208,7 +191,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
               </select>
             </label>
 
-            <label className="flex items-center gap-2.5 text-xs text-[#D6C7B2] cursor-pointer">
+            <label className="flex items-center gap-2.5 text-xs font-medium cursor-pointer">
               <input
                 type="checkbox"
                 checked={state.settings.freeParkingJackpot}
@@ -220,12 +203,12 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                     },
                   })
                 }
-                className="accent-[#C59B27]"
+                className="accent-[#141414] w-4 h-4"
               />
               <span>{t(UI_TEXT.freeParkingJackpot, lang)}</span>
             </label>
 
-            <label className="flex items-center gap-2.5 text-xs text-[#D6C7B2] cursor-pointer">
+            <label className="flex items-center gap-2.5 text-xs font-medium cursor-pointer">
               <input
                 type="checkbox"
                 checked={state.settings.doubleOnGo}
@@ -237,12 +220,12 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                     },
                   })
                 }
-                className="accent-[#C59B27]"
+                className="accent-[#141414] w-4 h-4"
               />
               <span>{t(UI_TEXT.doubleOnGo, lang)}</span>
             </label>
 
-            <label className="flex items-center gap-2.5 text-xs text-[#D6C7B2] cursor-pointer">
+            <label className="flex items-center gap-2.5 text-xs font-medium cursor-pointer">
               <input
                 type="checkbox"
                 checked={state.settings.auctionEnabled}
@@ -254,30 +237,26 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                     },
                   })
                 }
-                className="accent-[#C59B27]"
+                className="accent-[#141414] w-4 h-4"
               />
               <span>{t(UI_TEXT.auctionEnabled, lang)}</span>
             </label>
           </div>
         </div>
 
-        {/* Right Card (5 cols): Players Registry & Start Match */}
-        <div className="md:col-span-5 bg-[#201713] border border-[#3E2E25] rounded-2xl p-5 flex flex-col justify-between shadow-xl">
+        {/* Right Card (5 cols): Players List & Start Button */}
+        <div className="md:col-span-5 bg-[#FAF8F5] border-2 border-[#141414] shadow-[5px_5px_0_#141414] p-5 flex flex-col justify-between">
           <div className="space-y-4">
-            <div className="flex items-center justify-between border-b border-[#34261E] pb-2.5">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-[#E5C158]" />
-                <h2 className="font-editorial text-base font-bold text-[#E5C158] uppercase tracking-wider">
-                  {t(UI_TEXT.playersInRoom, lang)} ({state.players.length}/8)
-                </h2>
-              </div>
+            <div className="flex items-center justify-between border-b-2 border-[#141414] pb-2">
+              <h2 className="text-sm font-black uppercase tracking-wider">
+                {t(UI_TEXT.playersInRoom, lang)} ({state.players.length}/8)
+              </h2>
               {state.players.length < 8 && (
                 <button
                   onClick={() => onSendAction('ADD_BOT')}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#3A2C24] hover:bg-[#4A382E] border border-[#C59B27]/50 text-[#FAF6EE] font-bold text-xs shadow"
+                  className="px-2.5 py-1 bg-[#FDE021] hover:bg-[#F5D400] border-[1.5px] border-[#141414] shadow-[2px_2px_0_#141414] text-[#141414] font-black text-[11px] uppercase"
                 >
-                  <UserPlus className="w-3.5 h-3.5 text-[#E5C158]" />
-                  <span>{t(UI_TEXT.addBot, lang)}</span>
+                  + {t(UI_TEXT.addBot, lang)}
                 </button>
               )}
             </div>
@@ -286,25 +265,25 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
               {state.players.map((p) => (
                 <div
                   key={p.id}
-                  className="flex items-center justify-between bg-[#16100D] border border-[#34261E] rounded-xl px-3.5 py-2.5"
+                  className="flex items-center justify-between bg-white border-[1.5px] border-[#141414] px-3 py-2"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
                     <div
                       style={{ backgroundColor: p.color }}
-                      className="w-9 h-9 rounded-full flex items-center justify-center text-white shadow border border-[#FAF6EE]/40"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-white border-[1.5px] border-[#141414]"
                     >
-                      <TokenSvg tokenId={p.token} className="w-5 h-5" />
+                      <TokenSvg tokenId={p.token} className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="font-bold text-sm text-[#FAF6EE] flex items-center gap-1.5">
+                      <div className="font-black text-xs uppercase flex items-center gap-1.5">
                         <span>{p.name}</span>
                         {p.id === myPlayerId && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#C59B27]/20 text-[#E5C158] border border-[#C59B27]/40 uppercase">
+                          <span className="text-[9px] px-1 bg-[#141414] text-white">
                             TU
                           </span>
                         )}
                       </div>
-                      <div className="font-mono-num text-xs text-[#4ADE80] font-semibold">
+                      <div className="font-mono-num text-xs text-[#1EA350] font-bold">
                         {p.cash} MDL
                       </div>
                     </div>
@@ -315,10 +294,9 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                       onClick={() =>
                         onSendAction('REMOVE_PLAYER', { targetId: p.id })
                       }
-                      className="p-1.5 rounded-lg bg-[#3B1216] hover:bg-[#58111A] text-[#FCA5A5]"
-                      title="Elimină Partener AI"
+                      className="px-2 py-0.5 bg-[#E32626] text-white font-bold text-[10px] border border-[#141414] uppercase"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      ×
                     </button>
                   )}
                 </div>
@@ -326,19 +304,18 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
             </div>
           </div>
 
-          <div className="pt-4 border-t border-[#34261E] mt-4">
+          <div className="pt-4 border-t-2 border-[#141414] mt-4">
             {state.players.length < 2 && (
-              <p className="text-xs text-[#E5C158] text-center mb-3">
+              <p className="text-xs font-bold text-[#E32626] text-center mb-3">
                 {t(UI_TEXT.needMorePlayers, lang)}
               </p>
             )}
             <button
               disabled={state.players.length < 2}
               onClick={() => onSendAction('START_GAME')}
-              className="w-full py-3 rounded-xl bg-[#C59B27] hover:bg-[#D4AB37] disabled:opacity-40 text-[#16110E] font-bold text-sm uppercase tracking-widest shadow-xl transition inline-flex items-center justify-center gap-2"
+              className="w-full py-3 bg-[#1EA350] hover:bg-[#168A41] disabled:opacity-40 text-white font-black text-sm uppercase tracking-widest border-2 border-[#141414] shadow-[4px_4px_0_#141414] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
             >
-              <Play className="w-4 h-4 fill-current" />
-              <span>{t(UI_TEXT.startGame, lang)}</span>
+              {t(UI_TEXT.startGame, lang)}
             </button>
           </div>
         </div>
