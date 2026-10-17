@@ -4,6 +4,26 @@ A full-featured, real-time multiplayer **Monopoly** web game themed around **Chi
 
 ---
 
+## Screenshots
+
+> Full walkthrough gallery: [docs/GALLERY.md](./docs/GALLERY.md)
+
+### Full 40-Tile Board, Title Deed Inspector & Active Match
+![Full Game Board](./docs/screenshots/04-game-board.png)
+
+### Dice Roll & Drawing "Noroc / Șansă" (*Scrisoare de la Cumătru*)
+![Card Drawn After Dice Roll](./docs/screenshots/06-after-roll.png)
+
+### VK Monopoly-Style Open Tables Browser & Custom Table Builder
+| Open Tables Directory | Custom Room Creator (`2P`–`8P`, `Auto-Start`) |
+| :---: | :---: |
+| ![Open Tables](./docs/screenshots/01-lobby-room-browser.png) | ![Create Table](./docs/screenshots/02-create-table.png) |
+
+### Multi-Language (`RO` / `EN` / `RU`) & Board-Only Mode
+![English UI & Board-Only Mode](./docs/screenshots/09-board-only.png)
+
+---
+
 ## Features
 
 ### Complete Classic Monopoly Rules
